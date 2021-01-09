@@ -3,6 +3,8 @@
 #include <Windows.h>
 #include <assert.h>
 
+#define fixEndian(x) swapByteOrder((uintptr_t &)(x));
+
 bool AptFile::Convert(std::string filename)
 {
 	std::filesystem::path file(filename);
@@ -10,8 +12,8 @@ bool AptFile::Convert(std::string filename)
 		return XMLToApt(filename);
 	else if (file.extension() == ".apt")
 		return AptToXML(filename);
-    else if (file.extension() == ".big")
-        return AptToXML(filename);
+	else if (file.extension() == ".big")
+		return AptToXML(filename);
 	else
 	{
 		std::cout << "Please give either an .xml or an .apt file to convert" << std::endl;
@@ -19,6 +21,20 @@ bool AptFile::Convert(std::string filename)
 	}
 }
 
+void swapByteOrder(uint32_t &ui)
+{
+	ui = (ui >> 24) |
+		 ((ui << 8) & 0x00FF0000) |
+		 ((ui >> 8) & 0x0000FF00) |
+		 (ui << 24);
+}
+
+void flipIter(AptConstItem *aci)
+{
+	uint32_t *iter = (uint32_t *)aci;
+	swapByteOrder(*iter);
+	swapByteOrder(*(iter + 1));
+}
 
 bool AptFile::AptToXML(std::string filename)
 {
@@ -41,22 +57,22 @@ bool AptFile::AptToXML(std::string filename)
 	//read the const file into a buffer
 	uint32_t constsize = std::filesystem::file_size(constfile);
 	std::ifstream conststream(constfile, std::ios::binary | std::ios::in);
-	uint8_t* constbuffer = new uint8_t[constsize];
-	conststream.read((char*)constbuffer, constsize);
+	uint8_t *constbuffer = new uint8_t[constsize];
+	conststream.read((char *)constbuffer, constsize);
 	conststream.close();
 
 	//read the apt file into a buffer
 	uint32_t aptsize = std::filesystem::file_size(aptfile);
 	std::ifstream aptstream(aptfile, std::ios::binary | std::ios::in);
-	uint8_t* aptbuffer = new uint8_t[aptsize];
-	aptstream.read((char*)aptbuffer, aptsize);
+	uint8_t *aptbuffer = new uint8_t[aptsize];
+	aptstream.read((char *)aptbuffer, aptsize);
 	aptstream.close();
 
 	//our data
 	auto data = new AptConstData;
 
 	//now start parsing by setting our iter to the start of the aptbuffer
-	uint8_t* iter = constbuffer;
+	uint8_t *iter = constbuffer;
 	//skip the first 20 bytes
 	iter += 0x14;
 	data->aptdataoffset = ReadUint(iter);
@@ -70,203 +86,243 @@ bool AptFile::AptToXML(std::string filename)
 	//now read each item
 	for (uint32_t i = 0; i < data->itemcount; ++i)
 	{
+		flipIter(aci);
 		data->items.push_back(new AptConstItem);
 		data->items[i]->type = aci->type;
+		std::cout << data->items[i]->type << '\t';
 		if (data->items[i]->type == TYPE_STRING)
 		{
 			//read the string from the position specified
 			data->items[i]->strvalue = (char *)(constbuffer + (uint32_t)aci->strvalue);
+			std::cout << data->items[i]->strvalue;
 		}
 		else
 		{
 			data->items[i]->numvalue = aci->numvalue;
+			std::cout << data->items[i]->numvalue;
 		}
+		std::cout << std::endl;
 		aci++;
 	}
 
 	//now parse the .apt file
 	OutputMovie *m = (OutputMovie *)(aptbuffer + data->aptdataoffset);
+	fixEndian(m->importcount);
+	fixEndian(m->exportcount);
+	fixEndian(m->framecount);
+	fixEndian(m->charactercount);
+	fixEndian(m->imports);
+	fixEndian(m->exports);
+	fixEndian(m->frames);
+	fixEndian(m->characters);
+	fixEndian(m->screensizex);
+	fixEndian(m->screensizey);
 	add(m->characters);
 	add(m->exports);
 	add(m->imports);
 	add(m->frames);
-    tinyxml2::XMLDocument doc;
-    auto declaration = doc.NewDeclaration();
-    doc.InsertFirstChild(declaration);
+	tinyxml2::XMLDocument doc;
+	auto declaration = doc.NewDeclaration();
+	doc.InsertFirstChild(declaration);
 
-    auto entry = doc.NewElement("aptdata");
-    auto entry2 = doc.NewElement("movieclip");
-    {
-        auto entry3 = doc.NewElement("imports");
-        for (uint32_t i = 0; i < m->importcount; i++)
-        {
-            add(m->imports[i].movie);
-            add(m->imports[i].name);
-            auto entry4 = doc.NewElement("import");
-            entry4->SetAttribute("name", m->imports[i].name);
-            entry4->SetAttribute("movie", m->imports[i].movie);
-            entry4->SetAttribute("character", m->imports[i].character);
-
-            entry3->InsertEndChild(entry4);
-        }
-        entry2->InsertEndChild(entry3);
-    }
-    {
-        auto entry3 = doc.NewElement("exports");
-        for (uint32_t i = 0; i < m->exportcount; i++)
-        {
-            add(m->exports[i].name);
-            auto entry4 = doc.NewElement("export");
-            entry4->SetAttribute("name", m->exports[i].name);
-            entry4->SetAttribute("character", m->exports[i].character);
-            entry3->InsertEndChild(entry4);
-        }
-        entry2->InsertEndChild(entry3);
-    }
+	auto entry = doc.NewElement("aptdata");
+	auto entry2 = doc.NewElement("movieclip");
 	{
-        auto entry3 = doc.NewElement("frames");
+		auto entry3 = doc.NewElement("imports");
+		for (uint32_t i = 0; i < m->importcount; i++)
+		{
+			fixEndian(m->imports[i].movie);
+			fixEndian(m->imports[i].name);
+			add(m->imports[i].movie);
+			add(m->imports[i].name);
+			auto entry4 = doc.NewElement("import");
+			entry4->SetAttribute("name", m->imports[i].name);
+			entry4->SetAttribute("movie", m->imports[i].movie);
+			entry4->SetAttribute("character", m->imports[i].character);
+
+			entry3->InsertEndChild(entry4);
+		}
+		entry2->InsertEndChild(entry3);
+	}
+	{
+		auto entry3 = doc.NewElement("exports");
+		for (uint32_t i = 0; i < m->exportcount; i++)
+		{
+			fixEndian(m->exports[i].name);
+			add(m->exports[i].name);
+			auto entry4 = doc.NewElement("export");
+			entry4->SetAttribute("name", m->exports[i].name);
+			entry4->SetAttribute("character", m->exports[i].character);
+			entry3->InsertEndChild(entry4);
+		}
+		entry2->InsertEndChild(entry3);
+	}
+	{
+		auto entry3 = doc.NewElement("frames");
 		for (uint32_t i = 0; i < m->framecount; i++)
 		{
+			fixEndian(m->frames[i].frameitemcount);
+			fixEndian(m->frames[i].frameitems);
 			add(m->frames[i].frameitems);
-            auto entry4 = doc.NewElement("frame");
-            entry4->SetAttribute("id", i);
+			auto entry4 = doc.NewElement("frame");
+			entry4->SetAttribute("id", i);
 			for (uint32_t j = 0; j < m->frames[i].frameitemcount; j++)
 			{
+				fixEndian(m->frames[i].frameitems[j]);
 				add(m->frames[i].frameitems[j]);
+				fixEndian(m->frames[i].frameitems[j]->type);
 				switch (m->frames[i].frameitems[j]->type)
 				{
 				case ACTION:
 				{
-                    auto entry5 = doc.NewElement("action");
+					auto entry5 = doc.NewElement("action");
 					OutputAction *oa = (OutputAction *)m->frames[i].frameitems[j];
+					fixEndian(oa->actionbytes);
 					add(oa->actionbytes);
-					ActionHelper::APT_ProcessActions(doc,entry5, oa->actionbytes, aptbuffer, data, aptbuffer);
-                    entry4->InsertEndChild(entry5);
+					ActionHelper::APT_ProcessActions(doc, entry5, oa->actionbytes, aptbuffer, data, aptbuffer);
+					entry4->InsertEndChild(entry5);
 				}
-					break;
+				break;
 				case FRAMELABEL:
 				{
 					FrameLabel *fl = (FrameLabel *)m->frames[i].frameitems[j];
+					fixEndian(fl->label);
 					add(fl->label);
-                    auto entry5 = doc.NewElement("framelabel");
-                    entry5->SetAttribute("label", fl->label);
-                    entry5->SetAttribute("frame", fl->frame);
-                    entry4->InsertEndChild(entry5);
+					auto entry5 = doc.NewElement("framelabel");
+					entry5->SetAttribute("label", fl->label);
+					entry5->SetAttribute("frame", fl->frame);
+					entry4->InsertEndChild(entry5);
 				}
-					break;
+				break;
 				case PLACEOBJECT:
 				{
 					OutputPlaceObject *po = (OutputPlaceObject *)m->frames[i].frameitems[j];
+					fixEndian(po->flags);
+					fixEndian(po->depth);
+					fixEndian(po->character);
+					fixEndian(po->rotateandscale);
+					fixEndian(po->translate);
+					fixEndian(po->colortransform);
+					fixEndian(po->ratio);
+					fixEndian(po->clipdepth);
+
 					int alpha = GetByte(po->colortransform, 3);
 					int blue = GetByte(po->colortransform, 2);
 					int green = GetByte(po->colortransform, 1);
 					int red = GetByte(po->colortransform, 0);
-                    auto entry5 = doc.NewElement("placeobject");
-                    //set all attributes of this node
-                    entry5->SetAttribute("depth", po->depth);
-                    entry5->SetAttribute("character", po->character);
-                    entry5->SetAttribute("rotm00", po->rotateandscale.m00);
-                    entry5->SetAttribute("rotm01", po->rotateandscale.m01);
-                    entry5->SetAttribute("rotm10", po->rotateandscale.m10);
-                    entry5->SetAttribute("rotm11", po->rotateandscale.m11);
-                    entry5->SetAttribute("tx", po->translate.X);
-                    entry5->SetAttribute("ty", po->translate.Y);
-                    entry5->SetAttribute("red", red);
-                    entry5->SetAttribute("green", green);
-                    entry5->SetAttribute("blue", blue);
-                    entry5->SetAttribute("alpha", alpha);
-                    entry5->SetAttribute("ratio", po->ratio);
-                    entry5->SetAttribute("clipdepth", po->clipdepth);
-                    entry5->SetAttribute("unknown", po->unknown);
+					auto entry5 = doc.NewElement("placeobject");
+					//set all attributes of this node
+					entry5->SetAttribute("depth", po->depth);
+					entry5->SetAttribute("character", po->character);
+					entry5->SetAttribute("rotm00", po->rotateandscale.m00);
+					entry5->SetAttribute("rotm01", po->rotateandscale.m01);
+					entry5->SetAttribute("rotm10", po->rotateandscale.m10);
+					entry5->SetAttribute("rotm11", po->rotateandscale.m11);
+					entry5->SetAttribute("tx", po->translate.X);
+					entry5->SetAttribute("ty", po->translate.Y);
+					entry5->SetAttribute("red", red);
+					entry5->SetAttribute("green", green);
+					entry5->SetAttribute("blue", blue);
+					entry5->SetAttribute("alpha", alpha);
+					entry5->SetAttribute("ratio", po->ratio);
+					entry5->SetAttribute("clipdepth", po->clipdepth);
+					entry5->SetAttribute("unknown", po->unknown);
 
 					std::string flagstr = Flags::GetPOFlags_str(po->flags);
-                    if (flagstr.size() > 0)
-                    {
-                        auto entry6 = doc.NewElement("poflags");
-                        entry6->SetAttribute("value", flagstr.c_str());
-                        entry5->InsertEndChild(entry6);
-                    }                                 
+					if (flagstr.size() > 0)
+					{
+						auto entry6 = doc.NewElement("poflags");
+						entry6->SetAttribute("value", flagstr.c_str());
+						entry5->InsertEndChild(entry6);
+					}
 
 					if (po->name)
 					{
+						fixEndian(po->name);
 						add(po->name);
-                        auto entry6 = doc.NewElement("poname");
-                        entry6->SetAttribute("name", po->name);
-                        entry5->InsertEndChild(entry6);
+						auto entry6 = doc.NewElement("poname");
+						entry6->SetAttribute("name", po->name);
+						entry5->InsertEndChild(entry6);
 					}
 					if (po->poa)
 					{
+						fixEndian(po->poa);
 						add(po->poa);
+						fixEndian(po->poa->actions);
 						add(po->poa->actions);
-                        auto entry6 = doc.NewElement("clipactions");
+						auto entry6 = doc.NewElement("clipactions");
 
 						for (uint32_t k = 0; k < po->poa->clipactioncount; k++)
 						{
-                            auto entry7 = doc.NewElement("clipaction");
-                            entry7->SetAttribute("flags", po->poa->actions[k].flags);
-                            entry7->SetAttribute("flags2", po->poa->actions[k].flags2);
+							auto entry7 = doc.NewElement("clipaction");
+							entry7->SetAttribute("flags", po->poa->actions[k].flags);
+							entry7->SetAttribute("flags2", po->poa->actions[k].flags2);
+							fixEndian(po->poa->actions[k].actiondata);
 							add(po->poa->actions[k].actiondata);
-							ActionHelper::APT_ProcessActions(doc,entry7 , po->poa->actions[k].actiondata, aptbuffer, data, aptbuffer);
-                            entry6->InsertEndChild(entry7);
+							ActionHelper::APT_ProcessActions(doc, entry7, po->poa->actions[k].actiondata, aptbuffer, data, aptbuffer);
+							entry6->InsertEndChild(entry7);
 						}
-                        entry5->InsertEndChild(entry6);
-
+						entry5->InsertEndChild(entry6);
 					}
-                    entry4->InsertEndChild(entry5);
+					entry4->InsertEndChild(entry5);
 				}
-					break;
+				break;
 				case REMOVEOBJECT:
 				{
 					RemoveObject *ro = (RemoveObject *)m->frames[i].frameitems[j];
-                    auto entry5 = doc.NewElement("removeobject");
-                    entry5->SetAttribute("depth", ro->depth);
-                    entry4->InsertEndChild(entry5);
+					auto entry5 = doc.NewElement("removeobject");
+					entry5->SetAttribute("depth", ro->depth);
+					entry4->InsertEndChild(entry5);
 				}
-					break;
+				break;
 				case BACKGROUNDCOLOR:
 				{
 					BackgroundColor *bg = (BackgroundColor *)m->frames[i].frameitems[j];
-                    auto entry5 = doc.NewElement("background");
-                    entry5->SetAttribute("color", (int)bg->color);
-                    entry4->InsertEndChild(entry5);
+					auto entry5 = doc.NewElement("background");
+					entry5->SetAttribute("color", (int)bg->color);
+					entry4->InsertEndChild(entry5);
 				}
-					break;
+				break;
 				case INITACTION:
 				{
 					OutputInitAction *oa = (OutputInitAction *)m->frames[i].frameitems[j];
+					fixEndian(oa->sprite);
+					fixEndian(oa->actionbytes);
 					add(oa->actionbytes);
-                    auto entry5 = doc.NewElement("initaction");
-                    entry5->SetAttribute("sprite", oa->sprite);
-					ActionHelper::APT_ProcessActions(doc,entry5, oa->actionbytes, aptbuffer, data, aptbuffer);
-                    entry4->InsertEndChild(entry5);
+					auto entry5 = doc.NewElement("initaction");
+					entry5->SetAttribute("sprite", oa->sprite);
+					ActionHelper::APT_ProcessActions(doc, entry5, oa->actionbytes, aptbuffer, data, aptbuffer);
+					entry4->InsertEndChild(entry5);
 				}
-					break;
+				break;
 				}
 			}
-            entry3->InsertEndChild(entry4);
+			entry3->InsertEndChild(entry4);
 		}
-        entry2->InsertEndChild(entry3);
+		entry2->InsertEndChild(entry3);
 	}
 	for (uint32_t ch = 0; ch < m->charactercount; ch++)
 	{
 		if (m->characters[ch])
 		{
+			fixEndian(m->characters[ch]);
 			add(m->characters[ch]);
+			swapByteOrder(m->characters[ch]->type);
 			switch (m->characters[ch]->type)
 			{
 			case SHAPE:
 			{
 				Shape *sh = (Shape *)m->characters[ch];
-                auto entry3 = doc.NewElement("shape");
-                entry3->SetAttribute("id", ch);
-                entry3->SetAttribute("top", sh->bounds.top);
-                entry3->SetAttribute("left", sh->bounds.left);
-                entry3->SetAttribute("bottom", sh->bounds.bottom);
-                entry3->SetAttribute("right", sh->bounds.right);
-                entry3->SetAttribute("geometry", sh->geometry);
-                entry->InsertEndChild(entry3);
+				auto entry3 = doc.NewElement("shape");
+				entry3->SetAttribute("id", ch);
+				entry3->SetAttribute("top", sh->bounds.top);
+				entry3->SetAttribute("left", sh->bounds.left);
+				entry3->SetAttribute("bottom", sh->bounds.bottom);
+				entry3->SetAttribute("right", sh->bounds.right);
+				entry3->SetAttribute("geometry", sh->geometry);
+				entry->InsertEndChild(entry3);
 			}
-				break;
+			break;
 			case EDITTEXT:
 			{
 				EditText *et = (EditText *)m->characters[ch];
@@ -274,374 +330,392 @@ bool AptFile::AptToXML(std::string filename)
 				int blue = GetByte(et->color, 1);
 				int green = GetByte(et->color, 2);
 				int red = GetByte(et->color, 3);
-                auto entry3 = doc.NewElement("edittext");
-                entry3->SetAttribute("id", ch);
-                entry3->SetAttribute("top", et->bounds.top);
-                entry3->SetAttribute("left", et->bounds.left);
-                entry3->SetAttribute("bottom", et->bounds.bottom);
-                entry3->SetAttribute("right", et->bounds.right);
-                entry3->SetAttribute("font", et->font);
-                entry3->SetAttribute("alignment", et->alignment);
-                entry3->SetAttribute("red", red);
-                entry3->SetAttribute("green",green);
-                entry3->SetAttribute("blue", blue);
-                entry3->SetAttribute("alpha", alpha);
-                entry3->SetAttribute("height", et->fontheight);
-                entry3->SetAttribute("readonly", et->readonly);
-                entry3->SetAttribute("multiline", et->multiline);
-                entry3->SetAttribute("wordwrap", et->wordwrap);
-				
+				auto entry3 = doc.NewElement("edittext");
+				entry3->SetAttribute("id", ch);
+				entry3->SetAttribute("top", et->bounds.top);
+				entry3->SetAttribute("left", et->bounds.left);
+				entry3->SetAttribute("bottom", et->bounds.bottom);
+				entry3->SetAttribute("right", et->bounds.right);
+				entry3->SetAttribute("font", et->font);
+				entry3->SetAttribute("alignment", et->alignment);
+				entry3->SetAttribute("red", red);
+				entry3->SetAttribute("green", green);
+				entry3->SetAttribute("blue", blue);
+				entry3->SetAttribute("alpha", alpha);
+				entry3->SetAttribute("height", et->fontheight);
+				entry3->SetAttribute("readonly", et->readonly);
+				entry3->SetAttribute("multiline", et->multiline);
+				entry3->SetAttribute("wordwrap", et->wordwrap);
+
 				if (et->text)
 				{
+					fixEndian(et->text);
 					add(et->text);
-                    auto entry4 = doc.NewElement("ettext");
-                    entry4->SetAttribute("text", et->text);
-                    entry3->InsertEndChild(entry4);
+					auto entry4 = doc.NewElement("ettext");
+					entry4->SetAttribute("text", et->text);
+					entry3->InsertEndChild(entry4);
 				}
 				if (et->variable)
 				{
+					fixEndian(et->variable);
 					add(et->variable);
-                    auto entry4 = doc.NewElement("etvar");
-                    entry4->SetAttribute("variable", et->variable);
-                    entry3->InsertEndChild(entry4);
+					auto entry4 = doc.NewElement("etvar");
+					entry4->SetAttribute("variable", et->variable);
+					entry3->InsertEndChild(entry4);
 				}
-                entry->InsertEndChild(entry3); 
+				entry->InsertEndChild(entry3);
 			}
-				break;
+			break;
 			case FONT:
 			{
 				OutputFont *fo = (OutputFont *)m->characters[ch];
+				fixEndian(fo->name);
 				add(fo->name);
-                auto entry3 = doc.NewElement("font");
-                entry3->SetAttribute("id", ch);
-                entry3->SetAttribute("name", fo->name);
+				auto entry3 = doc.NewElement("font");
+				entry3->SetAttribute("id", ch);
+				entry3->SetAttribute("name", fo->name);
 
 				if (fo->glyphcount)
 				{
+					fixEndian(fo->glyphs);
 					add(fo->glyphs);
-                    auto entry4 = doc.NewElement("glyphs");
+					auto entry4 = doc.NewElement("glyphs");
 
 					for (uint32_t i = 0; i < fo->glyphcount; i++)
 					{
-                        auto entry5 = doc.NewElement("glyph");
-                        entry5->SetAttribute("id", fo->glyphs[i]);
-                        entry4->InsertEndChild(entry5);
+						auto entry5 = doc.NewElement("glyph");
+						entry5->SetAttribute("id", fo->glyphs[i]);
+						entry4->InsertEndChild(entry5);
 					}
-                    entry3->InsertEndChild(entry4);
+					entry3->InsertEndChild(entry4);
 				}
-                entry->InsertEndChild(entry3);
+				entry->InsertEndChild(entry3);
 			}
-				break;
+			break;
 			case BUTTON:
 			{
 				OutputButton *ob = (OutputButton *)m->characters[ch];
 
-                auto entry3 = doc.NewElement("button");
-                entry3->SetAttribute("id", ch);
-                entry3->SetAttribute("top", ob->bounds.top);
-                entry3->SetAttribute("left", ob->bounds.left);
-                entry3->SetAttribute("bottom", ob->bounds.bottom);
-                entry3->SetAttribute("right", ob->bounds.right);
+				auto entry3 = doc.NewElement("button");
+				entry3->SetAttribute("id", ch);
+				entry3->SetAttribute("top", ob->bounds.top);
+				entry3->SetAttribute("left", ob->bounds.left);
+				entry3->SetAttribute("bottom", ob->bounds.bottom);
+				entry3->SetAttribute("right", ob->bounds.right);
 				if (ob->trianglecount)
 				{
+					fixEndian(ob->vertexes);
 					add(ob->vertexes);
+					fixEndian(ob->triangles);
 					add(ob->triangles);
-                    auto entry4 = doc.NewElement("vertexes");
+					auto entry4 = doc.NewElement("vertexes");
 					for (uint32_t i = 0; i < ob->vertexcount; i++)
 					{
-                        auto entry5 = doc.NewElement("vertex");
-                        entry5->SetAttribute("x", ob->vertexes[i].X);
-                        entry5->SetAttribute("y", ob->vertexes[i].Y);
-                        entry4->InsertEndChild(entry5);
+						auto entry5 = doc.NewElement("vertex");
+						entry5->SetAttribute("x", ob->vertexes[i].X);
+						entry5->SetAttribute("y", ob->vertexes[i].Y);
+						entry4->InsertEndChild(entry5);
 					}
-                    entry3->InsertEndChild(entry4);
+					entry3->InsertEndChild(entry4);
 
-                    entry4 = doc.NewElement("triangles");
+					entry4 = doc.NewElement("triangles");
 					for (uint32_t i = 0; i < ob->trianglecount; i++)
 					{
-                        auto entry5 = doc.NewElement("triangle");
-                        entry5->SetAttribute("v1", ob->triangles[i].v1);
-                        entry5->SetAttribute("v2", ob->triangles[i].v2);
-                        entry5->SetAttribute("v3", ob->triangles[i].v3);
-                        entry4->InsertEndChild(entry5);
+						auto entry5 = doc.NewElement("triangle");
+						entry5->SetAttribute("v1", ob->triangles[i].v1);
+						entry5->SetAttribute("v2", ob->triangles[i].v2);
+						entry5->SetAttribute("v3", ob->triangles[i].v3);
+						entry4->InsertEndChild(entry5);
 					}
-                    entry3->InsertEndChild(entry4);
+					entry3->InsertEndChild(entry4);
 				}
 				if (ob->recordcount)
 				{
+					fixEndian(ob->buttonrecords);
 					add(ob->buttonrecords);
 
-                    auto entry4 = doc.NewElement("buttonrecords");
+					auto entry4 = doc.NewElement("buttonrecords");
 
 					for (uint32_t i = 0; i < ob->recordcount; i++)
 					{
-                        auto entry5 = doc.NewElement("buttonrecord");
-                        entry5->SetAttribute("character", ob->buttonrecords[i].character);
-                        entry5->SetAttribute("depth", ob->buttonrecords[i].depth);
-                        entry5->SetAttribute("rotm00", ob->buttonrecords[i].rotateandscale.m00);
-                        entry5->SetAttribute("rotm01", ob->buttonrecords[i].rotateandscale.m01);
-                        entry5->SetAttribute("rotm10", ob->buttonrecords[i].rotateandscale.m10);
-                        entry5->SetAttribute("rotm11", ob->buttonrecords[i].rotateandscale.m11);
-                        entry5->SetAttribute("tx", ob->buttonrecords[i].translate.X);
-                        entry5->SetAttribute("ty", ob->buttonrecords[i].translate.Y);
-						
-						std::string flagstr = Flags::GetButFlags_str(ob->buttonrecords[i].flags);
-                        auto entry6 = doc.NewElement("buttonflags");
-                        entry6->SetAttribute("value", flagstr.c_str());
-                        entry5->InsertEndChild(entry6);
+						auto entry5 = doc.NewElement("buttonrecord");
+						entry5->SetAttribute("character", ob->buttonrecords[i].character);
+						entry5->SetAttribute("depth", ob->buttonrecords[i].depth);
+						entry5->SetAttribute("rotm00", ob->buttonrecords[i].rotateandscale.m00);
+						entry5->SetAttribute("rotm01", ob->buttonrecords[i].rotateandscale.m01);
+						entry5->SetAttribute("rotm10", ob->buttonrecords[i].rotateandscale.m10);
+						entry5->SetAttribute("rotm11", ob->buttonrecords[i].rotateandscale.m11);
+						entry5->SetAttribute("tx", ob->buttonrecords[i].translate.X);
+						entry5->SetAttribute("ty", ob->buttonrecords[i].translate.Y);
 
-                        entry4->InsertEndChild(entry5);
+						std::string flagstr = Flags::GetButFlags_str(ob->buttonrecords[i].flags);
+						auto entry6 = doc.NewElement("buttonflags");
+						entry6->SetAttribute("value", flagstr.c_str());
+						entry5->InsertEndChild(entry6);
+
+						entry4->InsertEndChild(entry5);
 					}
-                    entry3->InsertEndChild(entry4);
+					entry3->InsertEndChild(entry4);
 				}
 				if (ob->buttonactioncount)
 				{
+					fixEndian(ob->buttonactionrecords);
 					add(ob->buttonactionrecords);
-                    auto entry4 = doc.NewElement("buttonactions");
+					auto entry4 = doc.NewElement("buttonactions");
 
 					for (uint32_t i = 0; i < ob->buttonactioncount; i++)
 					{
 						std::string flagstr = Flags::GetButActionFlags_str(ob->buttonactionrecords[i].flags);
-                        auto entry5 = doc.NewElement("buttonaction");
-                        entry5->SetAttribute("flags", flagstr.c_str());
+						auto entry5 = doc.NewElement("buttonaction");
+						entry5->SetAttribute("flags", flagstr.c_str());
+						fixEndian(ob->buttonactionrecords[i].actiondata);
 						add(ob->buttonactionrecords[i].actiondata);
-						ActionHelper::APT_ProcessActions(doc,entry5, ob->buttonactionrecords[i].actiondata, aptbuffer, data, aptbuffer);
-                        entry4->InsertEndChild(entry5);
+						ActionHelper::APT_ProcessActions(doc, entry5, ob->buttonactionrecords[i].actiondata, aptbuffer, data, aptbuffer);
+						entry4->InsertEndChild(entry5);
 					}
-                    entry3->InsertEndChild(entry4);
+					entry3->InsertEndChild(entry4);
 				}
-                entry->InsertEndChild(entry3);
+				entry->InsertEndChild(entry3);
 			}
-				break;
+			break;
 			case SPRITE:
 			{
 				OutputSprite *sp = (OutputSprite *)m->characters[ch];
-                auto entry3 = doc.NewElement("sprite");
-                entry3->SetAttribute("id", ch);
+				auto entry3 = doc.NewElement("sprite");
+				entry3->SetAttribute("id", ch);
 
+				fixEndian(sp->frames);
 				add(sp->frames);
 				if (sp->framecount)
 				{
-                    auto entry4 = doc.NewElement("frames");
+					auto entry4 = doc.NewElement("frames");
 					for (uint32_t i = 0; i < sp->framecount; i++)
 					{
+						fixEndian(sp->frames[i].frameitems);
 						add(sp->frames[i].frameitems);
-                        auto entry5 = doc.NewElement("frame");
-                        entry5->SetAttribute("id", i);  
+						auto entry5 = doc.NewElement("frame");
+						entry5->SetAttribute("id", i);
 
 						for (uint32_t j = 0; j < sp->frames[i].frameitemcount; j++)
 						{
+							fixEndian(sp->frames[i].frameitems[j]);
 							add(sp->frames[i].frameitems[j]);
 							switch (sp->frames[i].frameitems[j]->type)
 							{
 							case ACTION:
 							{
 								OutputAction *oa = (OutputAction *)sp->frames[i].frameitems[j];
+								fixEndian(oa->actionbytes);
 								add(oa->actionbytes);
-                                auto entry6 = doc.NewElement("action");
-								ActionHelper::APT_ProcessActions(doc,entry6, oa->actionbytes, aptbuffer, data, aptbuffer);
-                                entry5->InsertEndChild(entry6);
+								auto entry6 = doc.NewElement("action");
+								ActionHelper::APT_ProcessActions(doc, entry6, oa->actionbytes, aptbuffer, data, aptbuffer);
+								entry5->InsertEndChild(entry6);
 							}
-								break;
+							break;
 							case FRAMELABEL:
 							{
 								FrameLabel *fl = (FrameLabel *)sp->frames[i].frameitems[j];
+								fixEndian(fl->label);
 								add(fl->label);
-                                auto entry6 = doc.NewElement("framelabel");
-                                entry6->SetAttribute("label", fl->label);
-                                entry6->SetAttribute("frame", fl->frame);
-                                entry5->InsertEndChild(entry6);
+								auto entry6 = doc.NewElement("framelabel");
+								entry6->SetAttribute("label", fl->label);
+								entry6->SetAttribute("frame", fl->frame);
+								entry5->InsertEndChild(entry6);
 							}
-								break;
+							break;
 							case PLACEOBJECT:
 							{
-                                OutputPlaceObject *po = (OutputPlaceObject *)sp->frames[i].frameitems[j];
-                                int alpha = GetByte(po->colortransform, 3);
-                                int blue = GetByte(po->colortransform, 2);
-                                int green = GetByte(po->colortransform, 1);
-                                int red = GetByte(po->colortransform, 0);
-                                auto entry6 = doc.NewElement("placeobject");
-                                //set all attributes of this node
-                                entry6->SetAttribute("depth", po->depth);
-                                entry6->SetAttribute("character", po->character);
-                                entry6->SetAttribute("rotm00", po->rotateandscale.m00);
-                                entry6->SetAttribute("rotm01", po->rotateandscale.m01);
-                                entry6->SetAttribute("rotm10", po->rotateandscale.m10);
-                                entry6->SetAttribute("rotm11", po->rotateandscale.m11);
-                                entry6->SetAttribute("tx", po->translate.X);
-                                entry6->SetAttribute("ty", po->translate.Y);
-                                entry6->SetAttribute("red", red);
-                                entry6->SetAttribute("green", green);
-                                entry6->SetAttribute("blue", blue);
-                                entry6->SetAttribute("alpha", alpha);
-                                entry6->SetAttribute("ratio", po->ratio);
-                                entry6->SetAttribute("clipdepth", po->clipdepth);
-                                entry6->SetAttribute("unknown", po->unknown);
+								OutputPlaceObject *po = (OutputPlaceObject *)sp->frames[i].frameitems[j];
+								int alpha = GetByte(po->colortransform, 3);
+								int blue = GetByte(po->colortransform, 2);
+								int green = GetByte(po->colortransform, 1);
+								int red = GetByte(po->colortransform, 0);
+								auto entry6 = doc.NewElement("placeobject");
+								//set all attributes of this node
+								entry6->SetAttribute("depth", po->depth);
+								entry6->SetAttribute("character", po->character);
+								entry6->SetAttribute("rotm00", po->rotateandscale.m00);
+								entry6->SetAttribute("rotm01", po->rotateandscale.m01);
+								entry6->SetAttribute("rotm10", po->rotateandscale.m10);
+								entry6->SetAttribute("rotm11", po->rotateandscale.m11);
+								entry6->SetAttribute("tx", po->translate.X);
+								entry6->SetAttribute("ty", po->translate.Y);
+								entry6->SetAttribute("red", red);
+								entry6->SetAttribute("green", green);
+								entry6->SetAttribute("blue", blue);
+								entry6->SetAttribute("alpha", alpha);
+								entry6->SetAttribute("ratio", po->ratio);
+								entry6->SetAttribute("clipdepth", po->clipdepth);
+								entry6->SetAttribute("unknown", po->unknown);
 
-                                std::string flagstr = Flags::GetPOFlags_str(po->flags);
-                                {
-                                    auto entry7 = doc.NewElement("poflags");
-                                    entry7->SetAttribute("value", flagstr.c_str());
-                                    entry6->InsertEndChild(entry7);
-                                }
+								std::string flagstr = Flags::GetPOFlags_str(po->flags);
+								{
+									auto entry7 = doc.NewElement("poflags");
+									entry7->SetAttribute("value", flagstr.c_str());
+									entry6->InsertEndChild(entry7);
+								}
 
-                                if (po->name)
-                                {
-                                    add(po->name);
-                                    auto entry7 = doc.NewElement("poname");
-                                    entry7->SetAttribute("name", po->name);
-                                    entry6->InsertEndChild(entry7);
-                                }
-                                if (po->poa)
-                                {
-                                    add(po->poa);
-                                    add(po->poa->actions);
-                                    auto entry7 = doc.NewElement("clipactions");
+								if (po->name)
+								{
+									fixEndian(po->name);
+									add(po->name);
+									auto entry7 = doc.NewElement("poname");
+									entry7->SetAttribute("name", po->name);
+									entry6->InsertEndChild(entry7);
+								}
+								if (po->poa)
+								{
+									fixEndian(po->poa);
+									add(po->poa);
+									fixEndian(po->poa->actions);
+									add(po->poa->actions);
+									auto entry7 = doc.NewElement("clipactions");
 
-                                    for (uint32_t k = 0; k < po->poa->clipactioncount; k++)
-                                    {
-                                        auto entry8 = doc.NewElement("clipaction");
-                                        entry8->SetAttribute("flags", po->poa->actions[k].flags);
-                                        entry8->SetAttribute("flags2", po->poa->actions[k].flags2);
-                                        add(po->poa->actions[k].actiondata);
-                                        ActionHelper::APT_ProcessActions(doc, entry8, po->poa->actions[k].actiondata, aptbuffer, data, aptbuffer);
-                                        entry7->InsertEndChild(entry8);
-                                    }
-                                    entry6->InsertEndChild(entry7);
-
-                                }
-                                entry5->InsertEndChild(entry6);
+									for (uint32_t k = 0; k < po->poa->clipactioncount; k++)
+									{
+										auto entry8 = doc.NewElement("clipaction");
+										entry8->SetAttribute("flags", po->poa->actions[k].flags);
+										entry8->SetAttribute("flags2", po->poa->actions[k].flags2);
+										fixEndian(po->poa->actions[k].actiondata);
+										add(po->poa->actions[k].actiondata);
+										ActionHelper::APT_ProcessActions(doc, entry8, po->poa->actions[k].actiondata, aptbuffer, data, aptbuffer);
+										entry7->InsertEndChild(entry8);
+									}
+									entry6->InsertEndChild(entry7);
+								}
+								entry5->InsertEndChild(entry6);
 							}
-								break;
+							break;
 							case REMOVEOBJECT:
 							{
 								RemoveObject *ro = (RemoveObject *)sp->frames[i].frameitems[j];
-                                auto entry6 = doc.NewElement("removeobject");
-                                entry6->SetAttribute("depth", ro->depth);
-                                entry5->InsertEndChild(entry6);
+								auto entry6 = doc.NewElement("removeobject");
+								entry6->SetAttribute("depth", ro->depth);
+								entry5->InsertEndChild(entry6);
 							}
-								break;
+							break;
 							case BACKGROUNDCOLOR:
 							{
 								BackgroundColor *bg = (BackgroundColor *)sp->frames[i].frameitems[j];
-                                auto entry6 = doc.NewElement("background");
-                                entry6->SetAttribute("color", bg->color);
-                                entry5->InsertEndChild(entry6);
+								auto entry6 = doc.NewElement("background");
+								entry6->SetAttribute("color", bg->color);
+								entry5->InsertEndChild(entry6);
 							}
-								break;
+							break;
 							case INITACTION:
 							{
 								OutputInitAction *oa = (OutputInitAction *)sp->frames[i].frameitems[j];
+								fixEndian(oa->actionbytes);
 								add(oa->actionbytes);
-                                auto entry6 = doc.NewElement("initaction");
-                                entry6->SetAttribute("sprite", oa->sprite);
+								auto entry6 = doc.NewElement("initaction");
+								entry6->SetAttribute("sprite", oa->sprite);
 
-								ActionHelper::APT_ProcessActions(doc,entry6, oa->actionbytes, aptbuffer,  data, aptbuffer);
-                                entry5->InsertEndChild(entry6);
+								ActionHelper::APT_ProcessActions(doc, entry6, oa->actionbytes, aptbuffer, data, aptbuffer);
+								entry5->InsertEndChild(entry6);
 							}
-								break;
+							break;
 							}
 						}
-                       
-                        entry4->InsertEndChild(entry5);
-					}
-                    entry3->InsertEndChild(entry4);
-				}
-                entry->InsertEndChild(entry3);
 
+						entry4->InsertEndChild(entry5);
+					}
+					entry3->InsertEndChild(entry4);
+				}
+				entry->InsertEndChild(entry3);
 			}
-				break;
+			break;
 			case IMAGE:
 			{
 				Image *im = (Image *)m->characters[ch];
-                auto entry3 = doc.NewElement("image");
-                entry3->SetAttribute("id", ch);
-                entry3->SetAttribute("image", im->texture);
-                entry->InsertEndChild(entry3);
+				auto entry3 = doc.NewElement("image");
+				entry3->SetAttribute("id", ch);
+				entry3->SetAttribute("image", im->texture);
+				entry->InsertEndChild(entry3);
 			}
-				break;
+			break;
 			case MORPH:
 			{
 				Morph *mo = (Morph *)m->characters[ch];
-                auto entry3 = doc.NewElement("morph");
-                entry3->SetAttribute("id", ch);
-                entry3->SetAttribute("start", mo->startshape);
-                entry3->SetAttribute("end", mo->endshape);
-                entry->InsertEndChild(entry3);
+				auto entry3 = doc.NewElement("morph");
+				entry3->SetAttribute("id", ch);
+				entry3->SetAttribute("start", mo->startshape);
+				entry3->SetAttribute("end", mo->endshape);
+				entry->InsertEndChild(entry3);
 			}
-				break;
+			break;
 			case TEXT:
 			{
 				OutputText *te = (OutputText *)m->characters[ch];
-                auto entry3 = doc.NewElement("text");
-                entry3->SetAttribute("id", ch);
-                entry3->SetAttribute("top", te->bounds.top);
-                entry3->SetAttribute("left", te->bounds.left);
-                entry3->SetAttribute("bottom", te->bounds.bottom);
-                entry3->SetAttribute("right", te->bounds.right);
-                entry3->SetAttribute("rotm00", te->rotateandscale.m00);
-                entry3->SetAttribute("rotm01", te->rotateandscale.m01);
-                entry3->SetAttribute("rotm10", te->rotateandscale.m10);
-                entry3->SetAttribute("rotm11", te->rotateandscale.m11);
-                entry3->SetAttribute("tx", te->translate.X);
-                entry3->SetAttribute("ty", te->translate.Y);
+				auto entry3 = doc.NewElement("text");
+				entry3->SetAttribute("id", ch);
+				entry3->SetAttribute("top", te->bounds.top);
+				entry3->SetAttribute("left", te->bounds.left);
+				entry3->SetAttribute("bottom", te->bounds.bottom);
+				entry3->SetAttribute("right", te->bounds.right);
+				entry3->SetAttribute("rotm00", te->rotateandscale.m00);
+				entry3->SetAttribute("rotm01", te->rotateandscale.m01);
+				entry3->SetAttribute("rotm10", te->rotateandscale.m10);
+				entry3->SetAttribute("rotm11", te->rotateandscale.m11);
+				entry3->SetAttribute("tx", te->translate.X);
+				entry3->SetAttribute("ty", te->translate.Y);
 
-				
 				if (te->recordcount)
 				{
+					fixEndian(te->records);
 					add(te->records);
-                    auto entry4 = doc.NewElement("records");
+					auto entry4 = doc.NewElement("records");
 					for (uint32_t i = 0; i < te->recordcount; i++)
 					{
-                        auto entry5 = doc.NewElement("record");
-                        entry5->SetAttribute("font", te->records[i].font);
-                        entry5->SetAttribute("red", te->records[i].color.top);
-                        entry5->SetAttribute("green", te->records[i].color.left);
-                        entry5->SetAttribute("blue", te->records[i].color.bottom);
-                        entry5->SetAttribute("alpha", te->records[i].color.right);
-                        entry5->SetAttribute("u1", te->records[i].unknown.top);
-                        entry5->SetAttribute("u2", te->records[i].unknown.left);
-                        entry5->SetAttribute("u3", te->records[i].unknown.bottom);
-                        entry5->SetAttribute("u4", te->records[i].unknown.right);
-                        entry5->SetAttribute("tx", te->records[i].offset.X);
-                        entry5->SetAttribute("ty", te->records[i].offset.Y);
-                        entry5->SetAttribute("height", te->records[i].textheight);
-					
+						auto entry5 = doc.NewElement("record");
+						entry5->SetAttribute("font", te->records[i].font);
+						entry5->SetAttribute("red", te->records[i].color.top);
+						entry5->SetAttribute("green", te->records[i].color.left);
+						entry5->SetAttribute("blue", te->records[i].color.bottom);
+						entry5->SetAttribute("alpha", te->records[i].color.right);
+						entry5->SetAttribute("u1", te->records[i].unknown.top);
+						entry5->SetAttribute("u2", te->records[i].unknown.left);
+						entry5->SetAttribute("u3", te->records[i].unknown.bottom);
+						entry5->SetAttribute("u4", te->records[i].unknown.right);
+						entry5->SetAttribute("tx", te->records[i].offset.X);
+						entry5->SetAttribute("ty", te->records[i].offset.Y);
+						entry5->SetAttribute("height", te->records[i].textheight);
+
 						if (te->records[i].glyphcount)
 						{
-                            auto entry6 = doc.NewElement("glyphs");
+							auto entry6 = doc.NewElement("glyphs");
+							fixEndian(te->records[i].glyphs);
 							add(te->records[i].glyphs);
 							for (uint32_t j = 0; j < te->records[i].glyphcount; j++)
 							{
-                                auto entry7 = doc.NewElement("glyph");
-                                entry7->SetAttribute("index", te->records[i].glyphs[j].index);
-                                entry7->SetAttribute("advance", te->records[i].glyphs[j].advance);
+								auto entry7 = doc.NewElement("glyph");
+								entry7->SetAttribute("index", te->records[i].glyphs[j].index);
+								entry7->SetAttribute("advance", te->records[i].glyphs[j].advance);
 							}
-                            entry5->InsertEndChild(entry6);
+							entry5->InsertEndChild(entry6);
 						}
-                        entry4->InsertEndChild(entry5);
+						entry4->InsertEndChild(entry5);
 					}
-                    entry3->InsertEndChild(entry4);
+					entry3->InsertEndChild(entry4);
 				}
-                entry->InsertEndChild(entry3);
+				entry->InsertEndChild(entry3);
 			}
-				break;
+			break;
 			default:
 				break;
 			}
 		}
 		else
 		{
-            auto entry3 = doc.NewElement("empty");
-            entry3->SetAttribute("id", ch);
-            entry->InsertEndChild(entry3);
+			auto entry3 = doc.NewElement("empty");
+			entry3->SetAttribute("id", ch);
+			entry->InsertEndChild(entry3);
 		}
 	}
-   
-    entry->InsertFirstChild(entry2);
 
-    doc.InsertEndChild(entry);
-    doc.SaveFile(xmlfile.string().c_str());
+	entry->InsertFirstChild(entry2);
+
+	doc.InsertEndChild(entry);
+	doc.SaveFile(xmlfile.string().c_str());
 
 	if (data)
 		delete data;
@@ -672,16 +746,16 @@ bool AptFile::XMLToApt(std::string filename)
 	}
 	tinyxml2::XMLDocument doc;
 	doc.LoadFile(xmlfile.string().c_str());
-    if (doc.Error())
-    {
-        std::cout << "Failed to parse .xml file!" << std::endl;
-        return false;
-    }
+	if (doc.Error())
+	{
+		std::cout << "Failed to parse .xml file!" << std::endl;
+		return false;
+	}
 
-	tinyxml2::XMLNode* node = doc.FirstChildElement("aptdata");
+	tinyxml2::XMLNode *node = doc.FirstChildElement("aptdata");
 
 	tinyxml2::XMLElement *entry, *entry2, *entry3, *entry4, *entry5, *entry6;
-	AptConstData* data = new AptConstData();
+	AptConstData *data = new AptConstData();
 	data->itemcount = 0;
 
 	Movie *m = new Movie;
@@ -698,10 +772,10 @@ bool AptFile::XMLToApt(std::string filename)
 	m->count = 0;
 	for (entry = node->FirstChildElement(); entry != 0; entry = entry->NextSiblingElement())
 	{
-		if (std::string(entry->Value())=="movieclip")
+		if (std::string(entry->Value()) == "movieclip")
 		{
 			entry2 = entry->FirstChildElement();
-    		for (entry3 = entry2->FirstChildElement(); entry3 != 0; entry3 = entry3->NextSiblingElement())
+			for (entry3 = entry2->FirstChildElement(); entry3 != 0; entry3 = entry3->NextSiblingElement())
 			{
 				m->importcount++;
 				Import *im = new Import;
@@ -730,7 +804,7 @@ bool AptFile::XMLToApt(std::string filename)
 				m->frames.push_back(f);
 				for (entry4 = entry3->FirstChildElement(); entry4 != 0; entry4 = entry4->NextSiblingElement())
 				{
-                    if (std::string(entry4->Value()) == "action")
+					if (std::string(entry4->Value()) == "action")
 					{
 						f->frameitemcount++;
 						Action *a = new Action;
@@ -744,7 +818,7 @@ bool AptFile::XMLToApt(std::string filename)
 						ActionHelper::XML_ProcessActions(entry4, &a->ab, data);
 						f->frameitems.push_back(a);
 					}
-					if (std::string(entry4->Value())== "framelabel")
+					if (std::string(entry4->Value()) == "framelabel")
 					{
 						FrameLabel *l;
 						l = new FrameLabel;
@@ -755,7 +829,7 @@ bool AptFile::XMLToApt(std::string filename)
 						f->frameitems.push_back(l);
 						f->frameitemcount++;
 					}
-					if (std::string(entry4->Value())== "placeobject")
+					if (std::string(entry4->Value()) == "placeobject")
 					{
 						f->frameitemcount++;
 						PlaceObject *po = new PlaceObject;
@@ -825,7 +899,7 @@ bool AptFile::XMLToApt(std::string filename)
 							po->poa = 0;
 						}
 					}
-					if (std::string(entry4->Value())== "removeobject")
+					if (std::string(entry4->Value()) == "removeobject")
 					{
 						RemoveObject *ro;
 						ro = new RemoveObject;
@@ -834,7 +908,7 @@ bool AptFile::XMLToApt(std::string filename)
 						f->frameitems.push_back(ro);
 						f->frameitemcount++;
 					}
-                    else if (std::string(entry4->Value())== "background")
+					else if (std::string(entry4->Value()) == "background")
 					{
 						BackgroundColor *b;
 						b = new BackgroundColor;
@@ -843,7 +917,7 @@ bool AptFile::XMLToApt(std::string filename)
 						f->frameitems.push_back(b);
 						f->frameitemcount++;
 					}
-					else if (std::string(entry4->Value())== "initaction")
+					else if (std::string(entry4->Value()) == "initaction")
 					{
 						f->frameitemcount++;
 						InitAction *a = new InitAction;
@@ -861,7 +935,7 @@ bool AptFile::XMLToApt(std::string filename)
 				}
 			}
 		}
-		else if (std::string(entry->Value())== "shape")
+		else if (std::string(entry->Value()) == "shape")
 		{
 			m->charactercount++;
 			Shape *sh = new Shape;
@@ -874,7 +948,7 @@ bool AptFile::XMLToApt(std::string filename)
 			sh->geometry = entry->IntAttribute("geometry");
 			m->characters.push_back(sh);
 		}
-		else if (std::string(entry->Value())== "edittext")
+		else if (std::string(entry->Value()) == "edittext")
 		{
 			m->charactercount++;
 			EditText *sh = new EditText;
@@ -924,7 +998,7 @@ bool AptFile::XMLToApt(std::string filename)
 			}
 			m->characters.push_back(sh);
 		}
-        else if (std::string(entry->Value())== "font")
+		else if (std::string(entry->Value()) == "font")
 		{
 			m->charactercount++;
 			Font *sh = new Font;
@@ -944,7 +1018,7 @@ bool AptFile::XMLToApt(std::string filename)
 			}
 			m->characters.push_back(sh);
 		}
-		else if (std::string(entry->Value())== "button")
+		else if (std::string(entry->Value()) == "button")
 		{
 			m->charactercount++;
 			Button *b = new Button;
@@ -1044,7 +1118,7 @@ bool AptFile::XMLToApt(std::string filename)
 				}
 			}
 		}
-        else if (std::string(entry->Value())== "sprite")
+		else if (std::string(entry->Value()) == "sprite")
 		{
 			m->charactercount++;
 			Sprite *sp = new Sprite;
@@ -1195,7 +1269,7 @@ bool AptFile::XMLToApt(std::string filename)
 				}
 			}
 		}
-        else if (std::string(entry->Value())== "image")
+		else if (std::string(entry->Value()) == "image")
 		{
 			m->charactercount++;
 			Image *sh = new Image;
@@ -1204,17 +1278,18 @@ bool AptFile::XMLToApt(std::string filename)
 			sh->texture = entry->IntAttribute("image");
 			m->characters.push_back(sh);
 		}
-		else if (std::string(entry->Value())== "morph")
+		else if (std::string(entry->Value()) == "morph")
 		{
 			m->charactercount++;
 			Morph *sh = new Morph;
 			sh->type = MORPH;
 			sh->signature = CHAR_SIG;
 			sh->startshape = entry->IntAttribute("start");
-			sh->endshape = entry->IntAttribute("end");;
+			sh->endshape = entry->IntAttribute("end");
+			;
 			m->characters.push_back(sh);
 		}
-        else if (std::string(entry->Value())== "text")
+		else if (std::string(entry->Value()) == "text")
 		{
 			m->charactercount++;
 			Text *sh = new Text;
@@ -1261,14 +1336,13 @@ bool AptFile::XMLToApt(std::string filename)
 							Glyph *gl = new Glyph;
 							gl->index = entry5->IntAttribute("index");
 							gl->advance = entry5->IntAttribute("advance");
-
 						}
 					}
 				}
 			}
 			m->characters.push_back(sh);
 		}
-        else if (std::string(entry->Value())== "empty")
+		else if (std::string(entry->Value()) == "empty")
 		{
 			m->charactercount++;
 			m->characters.push_back(0);
@@ -1279,7 +1353,6 @@ bool AptFile::XMLToApt(std::string filename)
 	GenerateAptConstFile(data, constfile.string().c_str());
 	return true;
 }
-
 
 #pragma region Aptutils
 unsigned int AptFile::GetFrameItemSize(Frame *fr)
@@ -1326,13 +1399,13 @@ unsigned int AptFile::GetFrameItemPointerSize(Frame *fr)
 			framesize += a->ab.actionbytecount;
 			framesize += GETALIGN(a->ab.actionbytecount);
 		}
-			break;
+		break;
 		case FRAMELABEL:
 		{
 			FrameLabel *f = ((FrameLabel *)fr->frameitems[i]);
 			framesize += STRLENGTH(f->label);
 		}
-			break;
+		break;
 		case PLACEOBJECT:
 		{
 			PlaceObject *pl = ((PlaceObject *)fr->frameitems[i]);
@@ -1345,14 +1418,14 @@ unsigned int AptFile::GetFrameItemPointerSize(Frame *fr)
 				framesize += sizeof(OutputPlaceObjectActions);
 			}
 		}
-			break;
+		break;
 		case INITACTION:
 		{
 			InitAction *a = ((InitAction *)fr->frameitems[i]);
 			framesize += a->ab.actionbytecount;
 			framesize += GETALIGN(a->ab.actionbytecount);
 		}
-			break;
+		break;
 		}
 	}
 	return framesize;
@@ -1394,7 +1467,7 @@ unsigned int AptFile::GetFrameItemPointerPointerSize(Frame *fr)
 				}
 			}
 		}
-			break;
+		break;
 		case PLACEOBJECT:
 		{
 			PlaceObject *pl = ((PlaceObject *)fr->frameitems[i]);
@@ -1403,7 +1476,7 @@ unsigned int AptFile::GetFrameItemPointerPointerSize(Frame *fr)
 				framesize += pl->poa->clipactioncount * sizeof(PlaceObjectAction);
 			}
 		}
-			break;
+		break;
 		case INITACTION:
 		{
 			InitAction *a = ((InitAction *)fr->frameitems[i]);
@@ -1433,7 +1506,7 @@ unsigned int AptFile::GetFrameItemPointerPointerSize(Frame *fr)
 				}
 			}
 		}
-			break;
+		break;
 		}
 	}
 	return framesize;
@@ -1458,7 +1531,7 @@ unsigned int AptFile::GetFrameItemPointerPointerPointerSize(Frame *fr)
 				}
 			}
 		}
-			break;
+		break;
 		}
 	}
 	return framesize;
@@ -1506,7 +1579,7 @@ unsigned int AptFile::GetFrameItemPointerPointerPointerPointerSize(Frame *fr)
 				}
 			}
 		}
-			break;
+		break;
 		}
 	}
 	return framesize;
@@ -1593,7 +1666,7 @@ uint32_t AptFile::GenerateAptAptFile(Movie *m, const char *filename)
 				frameitempointerpointersize += fippsize;
 				aptdatasize += fippsize;
 			}
-				break;
+			break;
 			case SHAPE:
 				aptdatasize += sizeof(Shape);
 				characterdatasize += sizeof(Shape);
@@ -1697,14 +1770,14 @@ uint32_t AptFile::GenerateAptAptFile(Movie *m, const char *filename)
 				frameitempointersize += fipsize;
 				aptdatasize += fipsize;
 			}
-				break;
+			break;
 			}
 		}
 	}
 	unsigned char *aptdata = new unsigned char[aptdatasize];
 	memset(aptdata, 0, aptdatasize);
 	unsigned char *aptpos = aptdata;
-	std::vector <unsigned char **> relocations;
+	std::vector<unsigned char **> relocations;
 	memcpy(aptpos, "Apt Data:7\x1A\0", 12);
 	aptpos += 12;
 	Import *imp = (Import *)aptpos;
@@ -1890,7 +1963,7 @@ uint32_t AptFile::GenerateAptAptFile(Movie *m, const char *filename)
 					fi = (unsigned char *)a;
 				}
 			}
-				break;
+			break;
 			case SHAPE:
 			{
 				Shape *sh = (Shape *)chd;
@@ -1901,7 +1974,7 @@ uint32_t AptFile::GenerateAptAptFile(Movie *m, const char *filename)
 				sh->geometry = shi->geometry;
 				sh->signature = shi->signature;
 			}
-				break;
+			break;
 			case EDITTEXT:
 			{
 				EditText *et = (EditText *)chd;
@@ -1944,7 +2017,7 @@ uint32_t AptFile::GenerateAptAptFile(Movie *m, const char *filename)
 					et->variable = 0;
 				}
 			}
-				break;
+			break;
 			case FONT:
 			{
 				OutputFont *fo = (OutputFont *)chd;
@@ -1975,7 +2048,7 @@ uint32_t AptFile::GenerateAptAptFile(Movie *m, const char *filename)
 					fo->glyphs = 0;
 				}
 			}
-				break;
+			break;
 			case SPRITE:
 			{
 				OutputSprite *spr = (OutputSprite *)chd;
@@ -2083,7 +2156,7 @@ uint32_t AptFile::GenerateAptAptFile(Movie *m, const char *filename)
 									}
 								}
 							}
-								break;
+							break;
 							case FRAMELABEL:
 							{
 								FrameLabel *fl = (FrameLabel *)fi;
@@ -2097,7 +2170,7 @@ uint32_t AptFile::GenerateAptAptFile(Movie *m, const char *filename)
 								strcpy((char *)fip, fli->label);
 								fip += STRLENGTH(fli->label);
 							}
-								break;
+							break;
 							case PLACEOBJECT:
 							{
 								OutputPlaceObject *pl = (OutputPlaceObject *)fi;
@@ -2211,7 +2284,7 @@ uint32_t AptFile::GenerateAptAptFile(Movie *m, const char *filename)
 									pl->poa = 0;
 								}
 							}
-								break;
+							break;
 							case REMOVEOBJECT:
 							{
 								RemoveObject *r = (RemoveObject *)fi;
@@ -2220,7 +2293,7 @@ uint32_t AptFile::GenerateAptAptFile(Movie *m, const char *filename)
 								r->type = ri->type;
 								r->depth = ri->depth;
 							}
-								break;
+							break;
 							case BACKGROUNDCOLOR:
 							{
 								BackgroundColor *bgc = (BackgroundColor *)fi;
@@ -2229,7 +2302,7 @@ uint32_t AptFile::GenerateAptAptFile(Movie *m, const char *filename)
 								bgc->type = bgci->type;
 								bgc->color = bgci->color;
 							}
-								break;
+							break;
 							case INITACTION:
 							{
 								OutputInitAction *a = (OutputInitAction *)fi;
@@ -2305,7 +2378,7 @@ uint32_t AptFile::GenerateAptAptFile(Movie *m, const char *filename)
 									}
 								}
 							}
-								break;
+							break;
 							}
 						}
 					}
@@ -2317,7 +2390,7 @@ uint32_t AptFile::GenerateAptAptFile(Movie *m, const char *filename)
 					}
 				}
 			}
-				break;
+			break;
 			case IMAGE:
 			{
 				Image *im = (Image *)chd;
@@ -2327,7 +2400,7 @@ uint32_t AptFile::GenerateAptAptFile(Movie *m, const char *filename)
 				im->texture = imi->texture;
 				im->signature = imi->signature;
 			}
-				break;
+			break;
 			case MORPH:
 			{
 				Morph *mo = (Morph *)chd;
@@ -2338,7 +2411,7 @@ uint32_t AptFile::GenerateAptAptFile(Movie *m, const char *filename)
 				mo->startshape = moi->startshape;
 				mo->endshape = moi->endshape;
 			}
-				break;
+			break;
 			case MOVIE:
 			{
 				OutputMovie *mov = (OutputMovie *)chd;
@@ -2473,7 +2546,7 @@ uint32_t AptFile::GenerateAptAptFile(Movie *m, const char *filename)
 									}
 								}
 							}
-								break;
+							break;
 							case FRAMELABEL:
 							{
 								FrameLabel *fl = (FrameLabel *)fi;
@@ -2487,7 +2560,7 @@ uint32_t AptFile::GenerateAptAptFile(Movie *m, const char *filename)
 								strcpy((char *)fip, fli->label);
 								fip += STRLENGTH(fli->label);
 							}
-								break;
+							break;
 							case PLACEOBJECT:
 							{
 								OutputPlaceObject *pl = (OutputPlaceObject *)fi;
@@ -2602,7 +2675,7 @@ uint32_t AptFile::GenerateAptAptFile(Movie *m, const char *filename)
 									pl->poa = 0;
 								}
 							}
-								break;
+							break;
 							case REMOVEOBJECT:
 							{
 								RemoveObject *r = (RemoveObject *)fi;
@@ -2611,7 +2684,7 @@ uint32_t AptFile::GenerateAptAptFile(Movie *m, const char *filename)
 								r->type = ri->type;
 								r->depth = ri->depth;
 							}
-								break;
+							break;
 							case BACKGROUNDCOLOR:
 							{
 								BackgroundColor *bgc = (BackgroundColor *)fi;
@@ -2620,7 +2693,7 @@ uint32_t AptFile::GenerateAptAptFile(Movie *m, const char *filename)
 								bgc->type = bgci->type;
 								bgc->color = bgci->color;
 							}
-								break;
+							break;
 							case INITACTION:
 							{
 								OutputInitAction *a = (OutputInitAction *)fi;
@@ -2696,7 +2769,7 @@ uint32_t AptFile::GenerateAptAptFile(Movie *m, const char *filename)
 									}
 								}
 							}
-								break;
+							break;
 							}
 						}
 					}
@@ -2708,7 +2781,7 @@ uint32_t AptFile::GenerateAptAptFile(Movie *m, const char *filename)
 					}
 				}
 			}
-				break;
+			break;
 			case TEXT:
 			{
 				OutputText *ot = (OutputText *)chd;
@@ -2747,7 +2820,7 @@ uint32_t AptFile::GenerateAptAptFile(Movie *m, const char *filename)
 					fi = (unsigned char *)tr;
 				}
 			}
-				break;
+			break;
 			}
 			ch++;
 		}
@@ -2781,8 +2854,7 @@ uint32_t AptFile::GenerateAptAptFile(Movie *m, const char *filename)
 		offset += sizeof(Export);
 		offset += STRLENGTH(m->exports[i]->name);
 	}
-	result = *(uint32_t*)(aptdata + offset);
-
+	result = *(uint32_t *)(aptdata + offset);
 
 	fwrite(aptdata, aptdatasize, 1, f);
 	fclose(f);
@@ -2793,7 +2865,7 @@ uint32_t AptFile::GenerateAptAptFile(Movie *m, const char *filename)
 void AptFile::GenerateAptConstFile(AptConstData *c, const char *filename)
 {
 	unsigned int aptconstsize = 0x20 + (c->itemcount * 8);
-	std::vector <unsigned char **> relocations;
+	std::vector<unsigned char **> relocations;
 	for (unsigned int i = 0; i < c->itemcount; i++)
 	{
 		if (c->items[i]->type == TYPE_STRING)
@@ -2858,7 +2930,5 @@ void AptFile::GenerateAptConstFile(AptConstData *c, const char *filename)
 	fwrite(aptconstdata, aptconstsize, 1, f);
 	fclose(f);
 }
-
-
 
 #pragma endregion
