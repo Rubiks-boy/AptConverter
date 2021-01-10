@@ -42,6 +42,7 @@ bool AptFile::AptToXML(std::string filename)
 	std::ifstream conststream(constfile, std::ios::binary | std::ios::in);
 	uint8_t *constbuffer = new uint8_t[constsize];
 	conststream.read((char *)constbuffer, constsize);
+	fixEndianness(constbuffer, constsize);
 	conststream.close();
 
 	//read the apt file into a buffer
@@ -49,6 +50,7 @@ bool AptFile::AptToXML(std::string filename)
 	std::ifstream aptstream(aptfile, std::ios::binary | std::ios::in);
 	uint8_t *aptbuffer = new uint8_t[aptsize];
 	aptstream.read((char *)aptbuffer, aptsize);
+	fixEndianness(aptbuffer, aptsize);
 	aptstream.close();
 
 	//our data
@@ -71,20 +73,23 @@ bool AptFile::AptToXML(std::string filename)
 	{
 		data->items.push_back(new AptConstItem);
 		data->items[i]->type = aci->type;
+		std::cout << aci->type << '\t';
 		if (data->items[i]->type == TYPE_STRING)
 		{
 			//read the string from the position specified
 			data->items[i]->strvalue = (char *)(constbuffer + (uint32_t)aci->strvalue);
+			std::cout << data->items[i]->strvalue << std::endl;
 		}
 		else
 		{
 			data->items[i]->numvalue = aci->numvalue;
+			std::cout << data->items[i]->numvalue << std::endl;
 		}
 		aci++;
 	}
 
 	//now parse the .apt file
-	OutputMovie *m = (OutputMovie *)(aptbuffer + data->aptdataoffset);
+	OutputMovie *m = (OutputMovie *)(aptbuffer + data->aptdataoffset + 8);
 	add(m->characters);
 	add(m->exports);
 	add(m->imports);
@@ -1276,6 +1281,23 @@ bool AptFile::XMLToApt(std::string filename)
 }
 
 #pragma region Aptutils
+void AptFile::fixEndianness(uint8_t *data, uint32_t constsize)
+{
+	if (constsize % 4 != 0)
+	{
+		std::cout << "Warning: file not a multiple of 32 bits" << std::endl;
+	}
+
+	for (uint32_t i = 0; i + 3 < constsize; i += 4)
+	{
+		uint32_t *ui = (uint32_t *)(data + i);
+		*ui = (*ui >> 24) |
+			  ((*ui << 8) & 0x00FF0000) |
+			  ((*ui >> 8) & 0x0000FF00) |
+			  (*ui << 24);
+	}
+}
+
 unsigned int AptFile::GetFrameItemSize(Frame *fr)
 {
 	unsigned int framesize = 0;

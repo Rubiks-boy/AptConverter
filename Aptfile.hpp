@@ -498,6 +498,7 @@ public:
 
 private:
 	//Util functions
+	static void fixEndianness(uint8_t *data, uint32_t constsize);
 	static unsigned int GetFrameItemSize(Frame *fr);
 	static unsigned int AptFile::GetFrameItemPointerSize(Frame *fr);
 	static unsigned int AptFile::GetFrameItemPointerPointerSize(Frame *fr);
