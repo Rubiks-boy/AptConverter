@@ -258,7 +258,9 @@ bool AptFile::AptToXML(std::string filename)
 		if (m->characters[ch])
 		{
 			add(m->characters[ch]);
-			switch (m->characters[ch]->type)
+			auto type = m->characters[ch]->type;
+			*((uint8_t **)&(m->characters[ch])) += (uint8_t)8;
+			switch (type)
 			{
 			case SHAPE:
 			{
