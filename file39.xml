@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<aptdata>
+    <movieclip>
+        <imports>
+            <import name=".noitrapnil.oole.70ktxeTleiF" movie="i/..p/no/traenilkoolT/70Ftxedlei" character="14"/>
+            <import name="aacnmoc.enopV.tnitreLlac" movie="n/../aacpmocnenoeV/tcitriLla" character="18"/>
+            <import name=".noitrapnil.oole.70ktsuCiSmoelgn" movie="i/..p/no/traenilkoolC/70otsuniSm" character="21"/>
+        </imports>
+        <exports>
+            <export name="aacnrap.lS.tredingiSircS" character="3"/>
+            <export name="lamsht_l" character="12"/>
+            <export name="lamsrt_l" character="13"/>
+            <export name="aacntra.nil.ooleab.krennneP.ytlaeccAP.tplanecAyttpec" character="64"/>
+            <export name="aP__gakcn.se.aac.traenilkoolnab..renanePAytlpecceP.ttlanccAy" character="65"/>
+        </exports>
+        <frames>
+            <frame id="0">
+                <background color="-65281"/>
+                <action>
+                    <end/>
+                </action>
+                <placeobject depth="1" character="64" rotm00="1.000000" rotm01="0.000000" rotm10="0.000000" rotm11="1.000000" tx="262.350006" ty="457.799988" red="255" green="255" blue="255" alpha="255" ratio="0.000000" clipdepth="-1" unknown="0">
+                    <poflags value="HasCharacter|HasMatrix|HasName"/>
+                    <poname name="ercS"/>
+                </placeobject>
+                <initaction sprite="65">
+                    <end/>
+                </initaction>
+                <initaction sprite="64">
+                    <end/>
+                </initaction>
+            </frame>
+        </frames>
+    </movieclip>
+    <image id="1" image="0"/>
+    <shape id="2" top="0.000000" left="0.000000" bottom="0.000000" right="0.000000" geometry="1101712589"/>
+    <sprite id="3"/>
+    <image id="4" image="0"/>
+    <shape id="5" top="0.000000" left="0.000000" bottom="0.000000" right="0.000000" geometry="1090519040"/>
+    <sprite id="6"/>
+    <image id="7" image="0"/>
+    <shape id="8" top="0.000000" left="0.000000" bottom="0.000000" right="0.000000" geometry="1090519040"/>
+    <sprite id="9"/>
+    <shape id="10" top="0.000000" left="0.000000" bottom="-2.000000" right="0.000000" geometry="1090519040"/>
+    <sprite id="11"/>
+    <sprite id="12"/>
+    <sprite id="13"/>
+    <empty id="14"/>
+    <image id="15" image="0"/>
+    <shape id="16" top="0.000000" left="0.000000" bottom="0.000000" right="0.000000" geometry="1115684864"/>
+    <sprite id="17"/>
+    <empty id="18"/>
+    <shape id="19" top="0.000000" left="0.000000" bottom="-74.300003" right="-57.450001" geometry="1117827891"/>
+    <sprite id="20"/>
+    <empty id="21"/>
+    <image id="22" image="0"/>
+    <image id="23" image="0"/>
+    <shape id="24" top="0.000000" left="0.000000" bottom="0.000000" right="0.000000" geometry="1133499187"/>
+    <sprite id="25"/>
+    <image id="26" image="0"/>
+    <image id="27" image="0"/>
+    <image id="28" image="0"/>
+    <shape id="29" top="0.000000" left="0.000000" bottom="0.000000" right="0.000000" geometry="1139343360"/>
+    <sprite id="30"/>
+    <image id="31" image="0"/>
+    <image id="32" image="0"/>
+    <image id="33" image="0"/>
+    <shape id="34" top="0.000000" left="0.000000" bottom="0.000000" right="0.000000" geometry="1139343360"/>
+    <sprite id="35"/>
+    <image id="36" image="0"/>
+    <image id="37" image="0"/>
+    <shape id="38" top="0.000000" left="0.000000" bottom="0.000000" right="0.000000" geometry="1133510656"/>
+    <sprite id="39"/>
+    <image id="40" image="0"/>
+    <image id="41" image="0"/>
+    <shape id="42" top="0.000000" left="0.000000" bottom="0.000000" right="0.000000" geometry="1133510656"/>
+    <sprite id="43"/>
+    <sprite id="44"/>
+    <image id="45" image="0"/>
+    <shape id="46" top="0.000000" left="0.000000" bottom="-36.000000" right="-11.000000" geometry="1101529088"/>
+    <sprite id="47"/>
+    <image id="48" image="0"/>
+    <shape id="49" top="0.000000" left="0.000000" bottom="0.000000" right="0.000000" geometry="1140850688"/>
+    <sprite id="50"/>
+    <image id="51" image="0"/>
+    <shape id="52" top="0.000000" left="0.000000" bottom="0.000000" right="0.000000" geometry="1140850688"/>
+    <sprite id="53"/>
+    <sprite id="54"/>
+    <shape id="55" top="0.000000" left="0.000000" bottom="0.000000" right="0.000000" geometry="1103626240"/>
+    <sprite id="56"/>
+    <image id="57" image="0"/>
+    <shape id="58" top="0.000000" left="0.000000" bottom="0.000000" right="0.000000" geometry="1140064256"/>
+    <sprite id="59"/>
+    <image id="60" image="0"/>
+    <image id="61" image="0"/>
+    <shape id="62" top="0.000000" left="0.000000" bottom="0.000000" right="0.000000" geometry="1145356288"/>
+    <sprite id="63"/>
+    <sprite id="64"/>
+    <sprite id="65"/>
+</aptdata>
