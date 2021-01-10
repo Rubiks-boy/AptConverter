@@ -41,16 +41,18 @@ bool AptFile::AptToXML(std::string filename)
 	uint32_t constsize = std::filesystem::file_size(constfile);
 	std::ifstream conststream(constfile, std::ios::binary | std::ios::in);
 	uint8_t *constbuffer = new uint8_t[constsize];
+	uint8_t *constbufferorig = new uint8_t[constsize];
 	conststream.read((char *)constbuffer, constsize);
-	fixEndianness(constbuffer, constsize);
+	fixEndianness(constbuffer, constbufferorig, constsize);
 	conststream.close();
 
 	//read the apt file into a buffer
 	uint32_t aptsize = std::filesystem::file_size(aptfile);
 	std::ifstream aptstream(aptfile, std::ios::binary | std::ios::in);
 	uint8_t *aptbuffer = new uint8_t[aptsize];
+	uint8_t *aptbufferorig = new uint8_t[aptsize];
 	aptstream.read((char *)aptbuffer, aptsize);
-	fixEndianness(aptbuffer, aptsize);
+	fixEndianness(aptbuffer, aptbufferorig, aptsize);
 	aptstream.close();
 
 	//our data
@@ -77,7 +79,7 @@ bool AptFile::AptToXML(std::string filename)
 		if (data->items[i]->type == TYPE_STRING)
 		{
 			//read the string from the position specified
-			data->items[i]->strvalue = (char *)(constbuffer + (uint32_t)aci->strvalue);
+			data->items[i]->strvalue = (char *)(constbufferorig + (uint32_t)aci->strvalue);
 			std::cout << data->items[i]->strvalue << std::endl;
 		}
 		else
@@ -94,6 +96,7 @@ bool AptFile::AptToXML(std::string filename)
 	add(m->exports);
 	add(m->imports);
 	add(m->frames);
+
 	tinyxml2::XMLDocument doc;
 	auto declaration = doc.NewDeclaration();
 	doc.InsertFirstChild(declaration);
@@ -104,8 +107,8 @@ bool AptFile::AptToXML(std::string filename)
 		auto entry3 = doc.NewElement("imports");
 		for (uint32_t i = 0; i < m->importcount; i++)
 		{
-			add(m->imports[i].movie);
-			add(m->imports[i].name);
+			addOrig(m->imports[i].movie);
+			addOrig(m->imports[i].name);
 			auto entry4 = doc.NewElement("import");
 			entry4->SetAttribute("name", m->imports[i].name);
 			entry4->SetAttribute("movie", m->imports[i].movie);
@@ -119,7 +122,7 @@ bool AptFile::AptToXML(std::string filename)
 		auto entry3 = doc.NewElement("exports");
 		for (uint32_t i = 0; i < m->exportcount; i++)
 		{
-			add(m->exports[i].name);
+			addOrig(m->exports[i].name);
 			auto entry4 = doc.NewElement("export");
 			entry4->SetAttribute("name", m->exports[i].name);
 			entry4->SetAttribute("character", m->exports[i].character);
@@ -1281,11 +1284,15 @@ bool AptFile::XMLToApt(std::string filename)
 }
 
 #pragma region Aptutils
-void AptFile::fixEndianness(uint8_t *data, uint32_t constsize)
+void AptFile::fixEndianness(uint8_t *data, uint8_t *dataorig, uint32_t constsize)
 {
 	if (constsize % 4 != 0)
 	{
 		std::cout << "Warning: file not a multiple of 32 bits" << std::endl;
+	}
+	for (uint32_t i = 0; i < constsize; ++i)
+	{
+		*(dataorig + i) = *(data + i);
 	}
 
 	for (uint32_t i = 0; i + 3 < constsize; i += 4)

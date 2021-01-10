@@ -427,7 +427,7 @@ void ActionHelper::APT_ProcessActions(tinyxml2::XMLDocument &doc, tinyxml2::XMLE
 	ActionHelper::action_type action;
 	do
 	{
-		action = (ActionHelper::action_type)(*a);
+		action = (ActionHelper::action_type)(*(a + 3));
 		a++;
 		switch (action)
 		{
