@@ -3,6 +3,8 @@
 #include <Windows.h>
 #include <assert.h>
 
+#define fixEndian(x) swapByteOrder((uintptr_t &)(x));
+
 bool AptFile::Convert(std::string filename)
 {
 	std::filesystem::path file(filename);
@@ -17,6 +19,21 @@ bool AptFile::Convert(std::string filename)
 		std::cout << "Please give either an .xml or an .apt file to convert" << std::endl;
 		return false;
 	}
+}
+
+void swapByteOrder(uint32_t &ui)
+{
+	ui = (ui >> 24) |
+		 ((ui << 8) & 0x00FF0000) |
+		 ((ui >> 8) & 0x0000FF00) |
+		 (ui << 24);
+}
+
+void flipIter(AptConstItem *aci)
+{
+	uint32_t *iter = (uint32_t *)aci;
+	swapByteOrder(*iter);
+	swapByteOrder(*(iter + 1));
 }
 
 bool AptFile::AptToXML(std::string filename)
@@ -69,22 +86,37 @@ bool AptFile::AptToXML(std::string filename)
 	//now read each item
 	for (uint32_t i = 0; i < data->itemcount; ++i)
 	{
+		flipIter(aci);
 		data->items.push_back(new AptConstItem);
 		data->items[i]->type = aci->type;
+		std::cout << data->items[i]->type << '\t';
 		if (data->items[i]->type == TYPE_STRING)
 		{
 			//read the string from the position specified
 			data->items[i]->strvalue = (char *)(constbuffer + (uint32_t)aci->strvalue);
+			std::cout << data->items[i]->strvalue;
 		}
 		else
 		{
 			data->items[i]->numvalue = aci->numvalue;
+			std::cout << data->items[i]->numvalue;
 		}
+		std::cout << std::endl;
 		aci++;
 	}
 
 	//now parse the .apt file
 	OutputMovie *m = (OutputMovie *)(aptbuffer + data->aptdataoffset);
+	fixEndian(m->importcount);
+	fixEndian(m->exportcount);
+	fixEndian(m->framecount);
+	fixEndian(m->charactercount);
+	fixEndian(m->imports);
+	fixEndian(m->exports);
+	fixEndian(m->frames);
+	fixEndian(m->characters);
+	fixEndian(m->screensizex);
+	fixEndian(m->screensizey);
 	add(m->characters);
 	add(m->exports);
 	add(m->imports);
@@ -99,6 +131,8 @@ bool AptFile::AptToXML(std::string filename)
 		auto entry3 = doc.NewElement("imports");
 		for (uint32_t i = 0; i < m->importcount; i++)
 		{
+			fixEndian(m->imports[i].movie);
+			fixEndian(m->imports[i].name);
 			add(m->imports[i].movie);
 			add(m->imports[i].name);
 			auto entry4 = doc.NewElement("import");
@@ -114,6 +148,7 @@ bool AptFile::AptToXML(std::string filename)
 		auto entry3 = doc.NewElement("exports");
 		for (uint32_t i = 0; i < m->exportcount; i++)
 		{
+			fixEndian(m->exports[i].name);
 			add(m->exports[i].name);
 			auto entry4 = doc.NewElement("export");
 			entry4->SetAttribute("name", m->exports[i].name);
@@ -126,18 +161,23 @@ bool AptFile::AptToXML(std::string filename)
 		auto entry3 = doc.NewElement("frames");
 		for (uint32_t i = 0; i < m->framecount; i++)
 		{
+			fixEndian(m->frames[i].frameitemcount);
+			fixEndian(m->frames[i].frameitems);
 			add(m->frames[i].frameitems);
 			auto entry4 = doc.NewElement("frame");
 			entry4->SetAttribute("id", i);
 			for (uint32_t j = 0; j < m->frames[i].frameitemcount; j++)
 			{
+				fixEndian(m->frames[i].frameitems[j]);
 				add(m->frames[i].frameitems[j]);
+				fixEndian(m->frames[i].frameitems[j]->type);
 				switch (m->frames[i].frameitems[j]->type)
 				{
 				case ACTION:
 				{
 					auto entry5 = doc.NewElement("action");
 					OutputAction *oa = (OutputAction *)m->frames[i].frameitems[j];
+					fixEndian(oa->actionbytes);
 					add(oa->actionbytes);
 					ActionHelper::APT_ProcessActions(doc, entry5, oa->actionbytes, aptbuffer, data, aptbuffer);
 					entry4->InsertEndChild(entry5);
@@ -146,6 +186,7 @@ bool AptFile::AptToXML(std::string filename)
 				case FRAMELABEL:
 				{
 					FrameLabel *fl = (FrameLabel *)m->frames[i].frameitems[j];
+					fixEndian(fl->label);
 					add(fl->label);
 					auto entry5 = doc.NewElement("framelabel");
 					entry5->SetAttribute("label", fl->label);
@@ -156,6 +197,15 @@ bool AptFile::AptToXML(std::string filename)
 				case PLACEOBJECT:
 				{
 					OutputPlaceObject *po = (OutputPlaceObject *)m->frames[i].frameitems[j];
+					fixEndian(po->flags);
+					fixEndian(po->depth);
+					fixEndian(po->character);
+					fixEndian(po->rotateandscale);
+					fixEndian(po->translate);
+					fixEndian(po->colortransform);
+					fixEndian(po->ratio);
+					fixEndian(po->clipdepth);
+
 					int alpha = GetByte(po->colortransform, 3);
 					int blue = GetByte(po->colortransform, 2);
 					int green = GetByte(po->colortransform, 1);
@@ -188,6 +238,7 @@ bool AptFile::AptToXML(std::string filename)
 
 					if (po->name)
 					{
+						fixEndian(po->name);
 						add(po->name);
 						auto entry6 = doc.NewElement("poname");
 						entry6->SetAttribute("name", po->name);
@@ -195,7 +246,9 @@ bool AptFile::AptToXML(std::string filename)
 					}
 					if (po->poa)
 					{
+						fixEndian(po->poa);
 						add(po->poa);
+						fixEndian(po->poa->actions);
 						add(po->poa->actions);
 						auto entry6 = doc.NewElement("clipactions");
 
@@ -204,6 +257,7 @@ bool AptFile::AptToXML(std::string filename)
 							auto entry7 = doc.NewElement("clipaction");
 							entry7->SetAttribute("flags", po->poa->actions[k].flags);
 							entry7->SetAttribute("flags2", po->poa->actions[k].flags2);
+							fixEndian(po->poa->actions[k].actiondata);
 							add(po->poa->actions[k].actiondata);
 							ActionHelper::APT_ProcessActions(doc, entry7, po->poa->actions[k].actiondata, aptbuffer, data, aptbuffer);
 							entry6->InsertEndChild(entry7);
@@ -232,6 +286,8 @@ bool AptFile::AptToXML(std::string filename)
 				case INITACTION:
 				{
 					OutputInitAction *oa = (OutputInitAction *)m->frames[i].frameitems[j];
+					fixEndian(oa->sprite);
+					fixEndian(oa->actionbytes);
 					add(oa->actionbytes);
 					auto entry5 = doc.NewElement("initaction");
 					entry5->SetAttribute("sprite", oa->sprite);
@@ -249,7 +305,9 @@ bool AptFile::AptToXML(std::string filename)
 	{
 		if (m->characters[ch])
 		{
+			fixEndian(m->characters[ch]);
 			add(m->characters[ch]);
+			swapByteOrder(m->characters[ch]->type);
 			switch (m->characters[ch]->type)
 			{
 			case SHAPE:
@@ -291,6 +349,7 @@ bool AptFile::AptToXML(std::string filename)
 
 				if (et->text)
 				{
+					fixEndian(et->text);
 					add(et->text);
 					auto entry4 = doc.NewElement("ettext");
 					entry4->SetAttribute("text", et->text);
@@ -298,6 +357,7 @@ bool AptFile::AptToXML(std::string filename)
 				}
 				if (et->variable)
 				{
+					fixEndian(et->variable);
 					add(et->variable);
 					auto entry4 = doc.NewElement("etvar");
 					entry4->SetAttribute("variable", et->variable);
@@ -309,6 +369,7 @@ bool AptFile::AptToXML(std::string filename)
 			case FONT:
 			{
 				OutputFont *fo = (OutputFont *)m->characters[ch];
+				fixEndian(fo->name);
 				add(fo->name);
 				auto entry3 = doc.NewElement("font");
 				entry3->SetAttribute("id", ch);
@@ -316,6 +377,7 @@ bool AptFile::AptToXML(std::string filename)
 
 				if (fo->glyphcount)
 				{
+					fixEndian(fo->glyphs);
 					add(fo->glyphs);
 					auto entry4 = doc.NewElement("glyphs");
 
@@ -342,7 +404,9 @@ bool AptFile::AptToXML(std::string filename)
 				entry3->SetAttribute("right", ob->bounds.right);
 				if (ob->trianglecount)
 				{
+					fixEndian(ob->vertexes);
 					add(ob->vertexes);
+					fixEndian(ob->triangles);
 					add(ob->triangles);
 					auto entry4 = doc.NewElement("vertexes");
 					for (uint32_t i = 0; i < ob->vertexcount; i++)
@@ -367,6 +431,7 @@ bool AptFile::AptToXML(std::string filename)
 				}
 				if (ob->recordcount)
 				{
+					fixEndian(ob->buttonrecords);
 					add(ob->buttonrecords);
 
 					auto entry4 = doc.NewElement("buttonrecords");
@@ -394,6 +459,7 @@ bool AptFile::AptToXML(std::string filename)
 				}
 				if (ob->buttonactioncount)
 				{
+					fixEndian(ob->buttonactionrecords);
 					add(ob->buttonactionrecords);
 					auto entry4 = doc.NewElement("buttonactions");
 
@@ -402,6 +468,7 @@ bool AptFile::AptToXML(std::string filename)
 						std::string flagstr = Flags::GetButActionFlags_str(ob->buttonactionrecords[i].flags);
 						auto entry5 = doc.NewElement("buttonaction");
 						entry5->SetAttribute("flags", flagstr.c_str());
+						fixEndian(ob->buttonactionrecords[i].actiondata);
 						add(ob->buttonactionrecords[i].actiondata);
 						ActionHelper::APT_ProcessActions(doc, entry5, ob->buttonactionrecords[i].actiondata, aptbuffer, data, aptbuffer);
 						entry4->InsertEndChild(entry5);
@@ -417,24 +484,28 @@ bool AptFile::AptToXML(std::string filename)
 				auto entry3 = doc.NewElement("sprite");
 				entry3->SetAttribute("id", ch);
 
+				fixEndian(sp->frames);
 				add(sp->frames);
 				if (sp->framecount)
 				{
 					auto entry4 = doc.NewElement("frames");
 					for (uint32_t i = 0; i < sp->framecount; i++)
 					{
+						fixEndian(sp->frames[i].frameitems);
 						add(sp->frames[i].frameitems);
 						auto entry5 = doc.NewElement("frame");
 						entry5->SetAttribute("id", i);
 
 						for (uint32_t j = 0; j < sp->frames[i].frameitemcount; j++)
 						{
+							fixEndian(sp->frames[i].frameitems[j]);
 							add(sp->frames[i].frameitems[j]);
 							switch (sp->frames[i].frameitems[j]->type)
 							{
 							case ACTION:
 							{
 								OutputAction *oa = (OutputAction *)sp->frames[i].frameitems[j];
+								fixEndian(oa->actionbytes);
 								add(oa->actionbytes);
 								auto entry6 = doc.NewElement("action");
 								ActionHelper::APT_ProcessActions(doc, entry6, oa->actionbytes, aptbuffer, data, aptbuffer);
@@ -444,6 +515,7 @@ bool AptFile::AptToXML(std::string filename)
 							case FRAMELABEL:
 							{
 								FrameLabel *fl = (FrameLabel *)sp->frames[i].frameitems[j];
+								fixEndian(fl->label);
 								add(fl->label);
 								auto entry6 = doc.NewElement("framelabel");
 								entry6->SetAttribute("label", fl->label);
@@ -485,6 +557,7 @@ bool AptFile::AptToXML(std::string filename)
 
 								if (po->name)
 								{
+									fixEndian(po->name);
 									add(po->name);
 									auto entry7 = doc.NewElement("poname");
 									entry7->SetAttribute("name", po->name);
@@ -492,7 +565,9 @@ bool AptFile::AptToXML(std::string filename)
 								}
 								if (po->poa)
 								{
+									fixEndian(po->poa);
 									add(po->poa);
+									fixEndian(po->poa->actions);
 									add(po->poa->actions);
 									auto entry7 = doc.NewElement("clipactions");
 
@@ -501,6 +576,7 @@ bool AptFile::AptToXML(std::string filename)
 										auto entry8 = doc.NewElement("clipaction");
 										entry8->SetAttribute("flags", po->poa->actions[k].flags);
 										entry8->SetAttribute("flags2", po->poa->actions[k].flags2);
+										fixEndian(po->poa->actions[k].actiondata);
 										add(po->poa->actions[k].actiondata);
 										ActionHelper::APT_ProcessActions(doc, entry8, po->poa->actions[k].actiondata, aptbuffer, data, aptbuffer);
 										entry7->InsertEndChild(entry8);
@@ -529,6 +605,7 @@ bool AptFile::AptToXML(std::string filename)
 							case INITACTION:
 							{
 								OutputInitAction *oa = (OutputInitAction *)sp->frames[i].frameitems[j];
+								fixEndian(oa->actionbytes);
 								add(oa->actionbytes);
 								auto entry6 = doc.NewElement("initaction");
 								entry6->SetAttribute("sprite", oa->sprite);
@@ -584,6 +661,7 @@ bool AptFile::AptToXML(std::string filename)
 
 				if (te->recordcount)
 				{
+					fixEndian(te->records);
 					add(te->records);
 					auto entry4 = doc.NewElement("records");
 					for (uint32_t i = 0; i < te->recordcount; i++)
@@ -605,6 +683,7 @@ bool AptFile::AptToXML(std::string filename)
 						if (te->records[i].glyphcount)
 						{
 							auto entry6 = doc.NewElement("glyphs");
+							fixEndian(te->records[i].glyphs);
 							add(te->records[i].glyphs);
 							for (uint32_t j = 0; j < te->records[i].glyphcount; j++)
 							{

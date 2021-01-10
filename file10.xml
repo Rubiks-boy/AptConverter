@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<aptdata>
+    <movieclip>
+        <imports/>
+        <exports>
+            <export name="ncaa.art.linelook.screen.GameClock.GenericClockScore" character="285212672"/>
+            <export name="ncaa.art.linelook.screen.GameClock.GenericClockScore" character="285212672"/>
+        </exports>
+        <frames>
+            <frame id="0">
+                <background color="-1717973761"/>
+                <placeobject depth="1" character="17" rotm00="1.000000" rotm01="0.000000" rotm10="0.000000" rotm11="0.000000" tx="13.000000" ty="0.000000" red="255" green="255" blue="255" alpha="255" ratio="0.000000" clipdepth="-1" unknown="0">
+                    <poflags value="HasCharacter|HasMatrix|HasName"/>
+                    <poname name="sample"/>
+                </placeobject>
+                <initaction sprite="17">
+                    <constantpool>
+                        <constant id="0" string="ncaa.art.linelook.screen.GameClock.GenericClockScore"/>
+                        <constant id="1" string="Object"/>
+                        <constant id="2" string="registerClass"/>
+                    </constantpool>
+                    <pushvalue val="0"/>
+                    <pushconstant val="0"/>
+                    <pushbyte val="2"/>
+                    <pushvalue val="1"/>
+                    <callnamedmethodpop val="2"/>
+                    <end/>
+                </initaction>
+            </frame>
+        </frames>
+    </movieclip>
+    <shape id="1" top="0.000000" left="0.000000" bottom="0.000000" right="0.000000" geometry="51265"/>
+    <sprite id="2"/>
+    <image id="3" image="0"/>
+    <shape id="4" top="0.000000" left="0.000000" bottom="0.000000" right="0.000000" geometry="32833"/>
+    <sprite id="5"/>
+    <image id="6" image="0"/>
+    <shape id="7" top="0.000000" left="0.000000" bottom="0.000000" right="0.000000" geometry="32833"/>
+    <sprite id="8"/>
+    <image id="9" image="0"/>
+    <shape id="10" top="0.000000" left="0.000000" bottom="0.000000" right="0.000000" geometry="32833"/>
+    <sprite id="11"/>
+    <image id="12" image="0"/>
+    <shape id="13" top="0.000000" left="0.000000" bottom="0.000000" right="0.000000" geometry="32833"/>
+    <sprite id="14"/>
+    <shape id="15" top="0.000000" left="0.000000" bottom="0.000000" right="0.000000" geometry="32833"/>
+    <sprite id="16"/>
+    <sprite id="17"/>
+</aptdata>

@@ -1,0 +1,917 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<aptdata>
+    <movieclip>
+        <imports/>
+        <exports>
+            <export name="Banner" character="8"/>
+        </exports>
+        <frames>
+            <frame id="0">
+                <background color="-16777216"/>
+                <action>
+                    <constantpool>
+                        <constant id="0" string="AddBanner( "/>
+                        <constant id="1" string="location"/>
+                        <constant id="2" string=", "/>
+                        <constant id="3" string="flagObj"/>
+                        <constant id="4" string="glowObj"/>
+                        <constant id="5" string=" )"/>
+                        <constant id="6" string="site"/>
+                        <constant id="7" string="_root"/>
+                        <constant id="8" string="~Location"/>
+                        <constant id="9" string="Banner"/>
+                        <constant id="10" string="attachMovie"/>
+                        <constant id="11" string="Name"/>
+                        <constant id="12" string="name"/>
+                        <constant id="13" string="Location"/>
+                        <constant id="14" string="_FlagRenderObj"/>
+                        <constant id="15" string="_GlowRenderObj"/>
+                        <constant id="16" string="_timerString"/>
+                        <constant id="17" string="$BannerTimer"/>
+                        <constant id="18" string="&amp;dropshadow"/>
+                        <constant id="19" string="removeMovieClip"/>
+                        <constant id="20" string="state"/>
+                        <constant id="21" string="gotoAndPlay"/>
+                        <constant id="22" string="progressNum"/>
+                        <constant id="23" string="progress"/>
+                        <constant id="24" string="light"/>
+                        <constant id="25" string="lightStr"/>
+                        <constant id="26" string="Engaging"/>
+                        <constant id="27" string="_Light0"/>
+                        <constant id="28" string="Call AptBannerUI::"/>
+                        <constant id="29" string="func"/>
+                        <constant id="30" string="("/>
+                        <constant id="31" string="params"/>
+                        <constant id="32" string=")"/>
+                        <constant id="33" string="FSCommand:"/>
+                        <constant id="34" string="AptBannerUI::"/>
+                        <constant id="35" string="Initialized"/>
+                        <constant id="36" string="Call PlaySound("/>
+                        <constant id="37" string="FSCommand:PlaySound"/>
+                        <constant id="38" string="BannerUI InitialSetup()"/>
+                        <constant id="39" string="extern"/>
+                        <constant id="40" string="InGame"/>
+                        <constant id="41" string="_global"/>
+                        <constant id="42" string="Test0"/>
+                        <constant id="43" string="_visible"/>
+                        <constant id="44" string="Test1"/>
+                        <constant id="45" string="OnInitialized"/>
+                        <constant id="46" string="GameCode"/>
+                        <constant id="47" string="InitialSetup"/>
+                    </constantpool>
+                    <definefunction name="AddBanner" size="94">
+                        <argument name="location"/>
+                        <argument name="flagObj"/>
+                        <argument name="glowObj"/>
+                        <body>
+                            <pushconstant val="0"/>
+                            <pushvalue val="1"/>
+                            <newadd/>
+                            <pushconstant val="2"/>
+                            <newadd/>
+                            <pushvalue val="3"/>
+                            <newadd/>
+                            <pushconstant val="2"/>
+                            <newadd/>
+                            <pushvalue val="4"/>
+                            <newadd/>
+                            <pushconstant val="5"/>
+                            <newadd/>
+                            <trace/>
+                            <pushconstant val="6"/>
+                            <pushvalue val="7"/>
+                            <pushconstant val="8"/>
+                            <pushvalue val="1"/>
+                            <newadd/>
+                            <getmember/>
+                            <definelocal/>
+                            <pushone/>
+                            <pushconstant val="9"/>
+                            <pushconstant val="9"/>
+                            <pushbyte val="3"/>
+                            <pushvalue val="6"/>
+                            <callnamedmethodpop val="10"/>
+                            <pushvalue val="6"/>
+                            <getnamedmember val="9"/>
+                            <pushconstant val="11"/>
+                            <pushvalue val="12"/>
+                            <setmember/>
+                            <pushvalue val="6"/>
+                            <getnamedmember val="9"/>
+                            <pushconstant val="13"/>
+                            <pushvalue val="1"/>
+                            <setmember/>
+                            <pushvalue val="6"/>
+                            <getnamedmember val="9"/>
+                            <pushconstant val="14"/>
+                            <pushvalue val="3"/>
+                            <setmember/>
+                            <pushvalue val="6"/>
+                            <getnamedmember val="9"/>
+                            <pushconstant val="15"/>
+                            <pushvalue val="4"/>
+                            <setmember/>
+                            <pushvalue val="6"/>
+                            <getnamedmember val="9"/>
+                            <pushconstant val="16"/>
+                            <pushconstant val="17"/>
+                            <pushvalue val="1"/>
+                            <newadd/>
+                            <pushconstant val="18"/>
+                            <newadd/>
+                            <setmember/>
+                        </body>
+                    </definefunction>
+                    <definefunction name="DeleteBanner" size="50">
+                        <argument name="location"/>
+                        <body>
+                            <pushconstant val="6"/>
+                            <pushvalue val="7"/>
+                            <pushconstant val="8"/>
+                            <pushvalue val="1"/>
+                            <newadd/>
+                            <getmember/>
+                            <definelocal/>
+                            <pushvalue val="6"/>
+                            <getnamedmember val="9"/>
+                            <pushconstant val="11"/>
+                            <pushundefined/>
+                            <setmember/>
+                            <pushvalue val="6"/>
+                            <getnamedmember val="9"/>
+                            <pushconstant val="13"/>
+                            <pushundefined/>
+                            <setmember/>
+                            <pushvalue val="6"/>
+                            <getnamedmember val="9"/>
+                            <pushconstant val="14"/>
+                            <pushundefined/>
+                            <setmember/>
+                            <pushvalue val="6"/>
+                            <getnamedmember val="9"/>
+                            <pushconstant val="15"/>
+                            <pushundefined/>
+                            <setmember/>
+                            <pushzero/>
+                            <pushvalue val="6"/>
+                            <getnamedmember val="9"/>
+                            <callnamedmethodpop val="19"/>
+                        </body>
+                    </definefunction>
+                    <definefunction name="SetBannerState" size="15">
+                        <argument name="location"/>
+                        <argument name="state"/>
+                        <body>
+                            <pushvalue val="20"/>
+                            <pushone/>
+                            <pushvalue val="7"/>
+                            <pushconstant val="8"/>
+                            <pushvalue val="1"/>
+                            <newadd/>
+                            <getmember/>
+                            <getnamedmember val="9"/>
+                            <callnamedmethodpop val="21"/>
+                        </body>
+                    </definefunction>
+                    <definefunction name="SetBannerProgress" size="65">
+                        <argument name="location"/>
+                        <argument name="progress"/>
+                        <body>
+                            <pushconstant val="22"/>
+                            <pushvalue val="23"/>
+                            <noarg action="74"/>
+                            <definelocal/>
+                            <pushconstant val="22"/>
+                            <pushvalue val="22"/>
+                            <pushbyte val="100"/>
+                            <noarg action="13"/>
+                            <setvariable/>
+                            <pushconstant val="24"/>
+                            <pushfloat val="0.250000"/>
+                            <pushfloat val="0.500000"/>
+                            <pushvalue val="22"/>
+                            <noarg action="12"/>
+                            <newadd/>
+                            <definelocal/>
+                            <pushconstant val="25"/>
+                            <pushvalue val="24"/>
+                            <pushconstant val="2"/>
+                            <newadd/>
+                            <pushvalue val="24"/>
+                            <newadd/>
+                            <pushconstant val="2"/>
+                            <newadd/>
+                            <pushvalue val="24"/>
+                            <newadd/>
+                            <definelocal/>
+                            <pushvalue val="7"/>
+                            <pushconstant val="8"/>
+                            <pushvalue val="1"/>
+                            <newadd/>
+                            <getmember/>
+                            <getnamedmember val="9"/>
+                            <getnamedmember val="26"/>
+                            <pushconstant val="27"/>
+                            <pushvalue val="25"/>
+                            <setmember/>
+                        </body>
+                    </definefunction>
+                    <definefunction name="GameCode" size="26">
+                        <argument name="func"/>
+                        <argument name="params"/>
+                        <body>
+                            <pushconstant val="28"/>
+                            <pushvalue val="29"/>
+                            <newadd/>
+                            <pushconstant val="30"/>
+                            <newadd/>
+                            <pushvalue val="31"/>
+                            <newadd/>
+                            <pushconstant val="32"/>
+                            <newadd/>
+                            <trace/>
+                            <pushconstant val="33"/>
+                            <pushconstant val="34"/>
+                            <pushvalue val="29"/>
+                            <newadd/>
+                            <noarg action="33"/>
+                            <pushvalue val="31"/>
+                            <geturl2/>
+                        </body>
+                    </definefunction>
+                    <definefunction name="PlaySound" size="26">
+                        <argument name="name"/>
+                        <body>
+                            <pushvalue val="7"/>
+                            <getnamedmember val="35"/>
+                            <logicalnot/>
+                            <branchiftrue offset="14"/>
+                            <pushconstant val="36"/>
+                            <pushvalue val="12"/>
+                            <newadd/>
+                            <pushconstant val="32"/>
+                            <newadd/>
+                            <trace/>
+                            <pushconstant val="37"/>
+                            <pushvalue val="12"/>
+                            <geturl2/>
+                        </body>
+                    </definefunction>
+                    <definefunction name="InitialSetup" size="38">
+                        <body>
+                            <pushconstant val="38"/>
+                            <trace/>
+                            <pushvalue val="39"/>
+                            <getnamedmember val="40"/>
+                            <logicalnot/>
+                            <branchiftrue offset="17"/>
+                            <pushglobal/>
+                            <pushconstant val="40"/>
+                            <pushtrue/>
+                            <setmember/>
+                            <pushvalue val="42"/>
+                            <pushconstant val="43"/>
+                            <pushfalse/>
+                            <setmember/>
+                            <pushvalue val="44"/>
+                            <pushconstant val="43"/>
+                            <pushfalse/>
+                            <setmember/>
+                            <pushconstant val="45"/>
+                            <pushone/>
+                            <callnamedfuncpop val="46"/>
+                        </body>
+                    </definefunction>
+                    <pushvalue val="7"/>
+                    <getnamedmember val="35"/>
+                    <logicalnot/>
+                    <logicalnot/>
+                    <branchiftrue offset="3"/>
+                    <pushzero/>
+                    <callnamedfuncpop val="47"/>
+                    <end/>
+                </action>
+                <placeobject depth="1" character="10" rotm00="1.000000" rotm01="0.000000" rotm10="0.000000" rotm11="1.000000" tx="0.000000" ty="0.000000" red="255" green="255" blue="255" alpha="255" ratio="0.000000" clipdepth="-1" unknown="0">
+                    <poflags value="HasCharacter|HasMatrix|HasName"/>
+                    <poname name="~Location0"/>
+                </placeobject>
+                <placeobject depth="3" character="10" rotm00="1.000000" rotm01="0.000000" rotm10="0.000000" rotm11="1.000000" tx="0.000000" ty="90.000000" red="255" green="255" blue="255" alpha="255" ratio="0.000000" clipdepth="-1" unknown="0">
+                    <poflags value="HasCharacter|HasMatrix|HasName"/>
+                    <poname name="~Location1"/>
+                </placeobject>
+                <placeobject depth="5" character="12" rotm00="1.000000" rotm01="0.000000" rotm10="0.000000" rotm11="1.000000" tx="276.450012" ty="3.500000" red="255" green="255" blue="255" alpha="255" ratio="0.000000" clipdepth="-1" unknown="0">
+                    <poflags value="HasCharacter|HasClipActions|HasMatrix|HasName"/>
+                    <poname name="Test0"/>
+                    <clipactions>
+                        <clipaction flags="1024" flags2="0">
+                            <constantpool>
+                                <constant id="0" string="_root"/>
+                                <constant id="1" string="Location0"/>
+                                <constant id="2" string="Banner"/>
+                                <constant id="3" string="movieclip"/>
+                                <constant id="4" string="CloseBanner"/>
+                                <constant id="5" string="Mordor"/>
+                                <constant id="6" string="AddBanner"/>
+                            </constantpool>
+                            <pushvalue val="0"/>
+                            <getnamedmember val="1"/>
+                            <getnamedmember val="2"/>
+                            <noarg action="68"/>
+                            <pushconstant val="3"/>
+                            <newequals/>
+                            <logicalnot/>
+                            <branchiftrue offset="12"/>
+                            <pushzero/>
+                            <pushone/>
+                            <pushvalue val="0"/>
+                            <callnamedmethodpop val="4"/>
+                            <branchalways offset="9"/>
+                            <pushconstant val="5"/>
+                            <pushzero/>
+                            <pushbyte val="2"/>
+                            <pushvalue val="0"/>
+                            <callnamedmethodpop val="6"/>
+                            <end/>
+                        </clipaction>
+                    </clipactions>
+                </placeobject>
+                <placeobject depth="7" character="12" rotm00="1.000000" rotm01="0.000000" rotm10="0.000000" rotm11="1.000000" tx="276.399994" ty="90.000000" red="255" green="255" blue="255" alpha="255" ratio="0.000000" clipdepth="-1" unknown="0">
+                    <poflags value="HasCharacter|HasClipActions|HasMatrix|HasName"/>
+                    <poname name="Test1"/>
+                    <clipactions>
+                        <clipaction flags="1024" flags2="0">
+                            <constantpool>
+                                <constant id="0" string="_root"/>
+                                <constant id="1" string="Location1"/>
+                                <constant id="2" string="Banner"/>
+                                <constant id="3" string="movieclip"/>
+                                <constant id="4" string="CloseBanner"/>
+                                <constant id="5" string="Rohan"/>
+                                <constant id="6" string="AddBanner"/>
+                            </constantpool>
+                            <pushvalue val="0"/>
+                            <getnamedmember val="1"/>
+                            <getnamedmember val="2"/>
+                            <noarg action="68"/>
+                            <pushconstant val="3"/>
+                            <newequals/>
+                            <logicalnot/>
+                            <branchiftrue offset="12"/>
+                            <pushone/>
+                            <pushone/>
+                            <pushvalue val="0"/>
+                            <callnamedmethodpop val="4"/>
+                            <branchalways offset="9"/>
+                            <pushconstant val="5"/>
+                            <pushone/>
+                            <pushbyte val="2"/>
+                            <pushvalue val="0"/>
+                            <callnamedmethodpop val="6"/>
+                            <end/>
+                        </clipaction>
+                    </clipactions>
+                </placeobject>
+            </frame>
+        </frames>
+    </movieclip>
+    <shape id="1" top="-50.000000" left="-50.000000" bottom="50.000000" right="50.000000" geometry="1"/>
+    <button id="2" top="-50.000000" left="-50.000000" bottom="50.000000" right="50.000000">
+        <vertexes>
+            <vertex x="-50.000000" y="50.000000"/>
+            <vertex x="-50.000000" y="-50.000000"/>
+            <vertex x="50.000000" y="-50.000000"/>
+            <vertex x="50.000000" y="50.000000"/>
+        </vertexes>
+        <triangles>
+            <triangle v1="0" v2="1" v3="2"/>
+            <triangle v1="2" v2="3" v3="0"/>
+        </triangles>
+        <buttonrecords>
+            <buttonrecord character="1" depth="1" rotm00="0.500000" rotm01="0.000000" rotm10="0.000000" rotm11="0.500000" tx="25.000000" ty="25.000000">
+                <buttonflags value="ButtonStateHitTest"/>
+            </buttonrecord>
+        </buttonrecords>
+        <buttonactions>
+            <buttonaction flags="CondOverDownToIdle">
+                <gotoframe frame="10"/>
+                <noarg action="6"/>
+                <end/>
+            </buttonaction>
+            <buttonaction flags="Key:left">
+                <gotoframe frame="0"/>
+                <noarg action="6"/>
+                <end/>
+            </buttonaction>
+            <buttonaction flags="Key:right">
+                <constantpool>
+                    <constant id="0" string="Location"/>
+                    <constant id="1" string="OnBttnBanner"/>
+                    <constant id="2" string="_root"/>
+                    <constant id="3" string="GameCode"/>
+                    <constant id="4" string="Gui_ReinforcementBannerClick"/>
+                    <constant id="5" string="PlaySound"/>
+                </constantpool>
+                <pushvalue val="0"/>
+                <pushconstant val="1"/>
+                <pushbyte val="2"/>
+                <pushvalue val="2"/>
+                <callnamedmethodpop val="3"/>
+                <pushconstant val="4"/>
+                <pushone/>
+                <pushvalue val="2"/>
+                <callnamedmethodpop val="5"/>
+                <gotoframe frame="20"/>
+                <noarg action="6"/>
+                <end/>
+            </buttonaction>
+            <buttonaction flags="Key:end">
+                <gotoframe frame="10"/>
+                <noarg action="6"/>
+                <end/>
+            </buttonaction>
+        </buttonactions>
+    </button>
+    <sprite id="3">
+        <frames>
+            <frame id="0">
+                <placeobject depth="1" character="1" rotm00="1.000000" rotm01="0.000000" rotm10="0.000000" rotm11="1.000000" tx="0.000000" ty="0.000000" red="255" green="255" blue="255" alpha="255" ratio="0.000000" clipdepth="-1" unknown="0">
+                    <poflags value="HasCharacter|HasMatrix"/>
+                </placeobject>
+            </frame>
+        </frames>
+    </sprite>
+    <sprite id="4">
+        <frames>
+            <frame id="0">
+                <framelabel label="_up" frame="0"/>
+                <action>
+                    <constantpool>
+                        <constant id="0" string="BannerView3D"/>
+                        <constant id="1" string="_RenderObj"/>
+                        <constant id="2" string="_Light0"/>
+                        <constant id="3" string="0.75, 0.75, 0.75"/>
+                    </constantpool>
+                    <pushvalue val="0"/>
+                    <pushconstant val="1"/>
+                    <pushvalue val="1"/>
+                    <setmember/>
+                    <pushvalue val="0"/>
+                    <pushconstant val="2"/>
+                    <pushconstant val="3"/>
+                    <setmember/>
+                    <end/>
+                </action>
+                <placeobject depth="1" character="2" rotm00="2.779999" rotm01="0.000000" rotm10="0.000000" rotm11="1.780014" tx="1.000000" ty="1.000000" red="255" green="255" blue="255" alpha="255" ratio="0.000000" clipdepth="-1" unknown="0">
+                    <poflags value="HasCharacter|HasMatrix"/>
+                </placeobject>
+                <placeobject depth="3" character="3" rotm00="1.399994" rotm01="0.000000" rotm10="0.000000" rotm11="0.899994" tx="70.000000" ty="45.000000" red="255" green="255" blue="255" alpha="255" ratio="0.000000" clipdepth="-1" unknown="0">
+                    <poflags value="HasCharacter|HasClipActions|HasMatrix|HasName"/>
+                    <poname name="BannerView3D"/>
+                    <clipactions>
+                        <clipaction flags="512" flags2="0">
+                            <pushstring str="_RenderObj"/>
+                            <setstringvar str=""/>
+                            <pushstring str="_type"/>
+                            <setstringvar str="View3D"/>
+                            <pushstring str="_KeepAspectRatio"/>
+                            <pushtrue/>
+                            <setvariable/>
+                            <pushstring str="_AnimMode"/>
+                            <setstringvar str="LOOP"/>
+                            <end/>
+                        </clipaction>
+                    </clipactions>
+                </placeobject>
+            </frame>
+            <frame id="1"/>
+            <frame id="2"/>
+            <frame id="3"/>
+            <frame id="4"/>
+            <frame id="5"/>
+            <frame id="6"/>
+            <frame id="7"/>
+            <frame id="8"/>
+            <frame id="9">
+                <action>
+                    <noarg action="7"/>
+                    <end/>
+                </action>
+            </frame>
+            <frame id="10">
+                <framelabel label="_over" frame="10"/>
+                <action>
+                    <constantpool>
+                        <constant id="0" string="BannerView3D"/>
+                        <constant id="1" string="_RenderObj"/>
+                        <constant id="2" string="_Light0"/>
+                        <constant id="3" string="1.0, 1.0, 1.0"/>
+                    </constantpool>
+                    <pushvalue val="0"/>
+                    <pushconstant val="1"/>
+                    <pushvalue val="1"/>
+                    <setmember/>
+                    <pushvalue val="0"/>
+                    <pushconstant val="2"/>
+                    <pushconstant val="3"/>
+                    <setmember/>
+                    <end/>
+                </action>
+                <placeobject depth="3" character="-1" rotm00="1.399994" rotm01="0.000000" rotm10="0.000000" rotm11="0.900009" tx="70.000000" ty="45.000000" red="255" green="255" blue="255" alpha="255" ratio="0.000000" clipdepth="-1" unknown="0">
+                    <poflags value="HasMatrix|Move"/>
+                </placeobject>
+            </frame>
+            <frame id="11"/>
+            <frame id="12"/>
+            <frame id="13"/>
+            <frame id="14"/>
+            <frame id="15"/>
+            <frame id="16"/>
+            <frame id="17"/>
+            <frame id="18"/>
+            <frame id="19">
+                <action>
+                    <noarg action="7"/>
+                    <end/>
+                </action>
+            </frame>
+            <frame id="20">
+                <framelabel label="_down" frame="20"/>
+                <action>
+                    <constantpool>
+                        <constant id="0" string="BannerView3D"/>
+                        <constant id="1" string="_RenderObj"/>
+                        <constant id="2" string="_Light0"/>
+                        <constant id="3" string="0.85, 0.85, 0.85"/>
+                    </constantpool>
+                    <pushvalue val="0"/>
+                    <pushconstant val="1"/>
+                    <pushvalue val="1"/>
+                    <setmember/>
+                    <pushvalue val="0"/>
+                    <pushconstant val="2"/>
+                    <pushconstant val="3"/>
+                    <setmember/>
+                    <end/>
+                </action>
+                <removeobject depth="3"/>
+                <placeobject depth="3" character="3" rotm00="1.399994" rotm01="0.000000" rotm10="0.000000" rotm11="0.900009" tx="72.000000" ty="47.000000" red="255" green="255" blue="255" alpha="255" ratio="0.000305" clipdepth="-1" unknown="0">
+                    <poflags value="HasCharacter|HasClipActions|HasMatrix|HasName|HasRatio"/>
+                    <poname name="BannerView3D"/>
+                    <clipactions>
+                        <clipaction flags="512" flags2="0">
+                            <pushstring str="_RenderObj"/>
+                            <setstringvar str=""/>
+                            <pushstring str="_type"/>
+                            <setstringvar str="View3D"/>
+                            <pushstring str="_KeepAspectRatio"/>
+                            <pushtrue/>
+                            <setvariable/>
+                            <pushstring str="_AnimMode"/>
+                            <setstringvar str="MANUAL"/>
+                            <end/>
+                        </clipaction>
+                    </clipactions>
+                </placeobject>
+            </frame>
+            <frame id="21"/>
+            <frame id="22"/>
+            <frame id="23"/>
+            <frame id="24"/>
+            <frame id="25"/>
+            <frame id="26"/>
+            <frame id="27"/>
+            <frame id="28"/>
+            <frame id="29">
+                <action>
+                    <noarg action="7"/>
+                    <end/>
+                </action>
+            </frame>
+        </frames>
+    </sprite>
+    <button id="5" top="-50.000000" left="-50.000000" bottom="50.000000" right="50.000000">
+        <vertexes>
+            <vertex x="-50.000000" y="50.000000"/>
+            <vertex x="-50.000000" y="-50.000000"/>
+            <vertex x="50.000000" y="-50.000000"/>
+            <vertex x="50.000000" y="50.000000"/>
+        </vertexes>
+        <triangles>
+            <triangle v1="0" v2="1" v3="2"/>
+            <triangle v1="2" v2="3" v3="0"/>
+        </triangles>
+        <buttonrecords>
+            <buttonrecord character="1" depth="1" rotm00="0.500000" rotm01="0.000000" rotm10="0.000000" rotm11="0.500000" tx="25.000000" ty="25.000000">
+                <buttonflags value="ButtonStateHitTest"/>
+            </buttonrecord>
+        </buttonrecords>
+    </button>
+    <font id="6" name="SachaWynter"/>
+    <edittext id="7" top="-2.000000" left="-2.000000" bottom="23.150000" right="82.000000" font="6" alignment="0" red="255" green="255" blue="255" alpha="255" height="9.000000" readonly="1" multiline="0" wordwrap="0">
+        <ettext text="00:00"/>
+        <etvar variable="_timerString"/>
+    </edittext>
+    <sprite id="8">
+        <frames>
+            <frame id="0">
+                <framelabel label="_available" frame="0"/>
+                <action>
+                    <constantpool>
+                        <constant id="0" string="Banner is _available"/>
+                        <constant id="1" string="AvailableBttn"/>
+                        <constant id="2" string="_RenderObj"/>
+                        <constant id="3" string="_FlagRenderObj"/>
+                        <constant id="4" string="Location"/>
+                    </constantpool>
+                    <pushconstant val="0"/>
+                    <trace/>
+                    <pushvalue val="1"/>
+                    <pushconstant val="2"/>
+                    <pushvalue val="3"/>
+                    <setmember/>
+                    <pushvalue val="1"/>
+                    <pushconstant val="4"/>
+                    <pushvalue val="4"/>
+                    <setmember/>
+                    <end/>
+                </action>
+                <placeobject depth="1" character="4" rotm00="1.000000" rotm01="0.000000" rotm10="0.000000" rotm11="1.000000" tx="0.000000" ty="0.000000" red="255" green="255" blue="255" alpha="255" ratio="0.000000" clipdepth="-1" unknown="0">
+                    <poflags value="HasCharacter|HasMatrix|HasName"/>
+                    <poname name="AvailableBttn"/>
+                </placeobject>
+            </frame>
+            <frame id="1"/>
+            <frame id="2"/>
+            <frame id="3"/>
+            <frame id="4"/>
+            <frame id="5"/>
+            <frame id="6"/>
+            <frame id="7"/>
+            <frame id="8"/>
+            <frame id="9">
+                <action>
+                    <noarg action="7"/>
+                    <end/>
+                </action>
+            </frame>
+            <frame id="10">
+                <removeobject depth="1"/>
+                <framelabel label="_engaging" frame="10"/>
+                <action>
+                    <constantpool>
+                        <constant id="0" string="Banner is _engaging"/>
+                        <constant id="1" string="Engaging"/>
+                        <constant id="2" string="_RenderObj"/>
+                        <constant id="3" string="_FlagRenderObj"/>
+                        <constant id="4" string="_Light0"/>
+                        <constant id="5" string="0.25, 0.25, 0.25"/>
+                    </constantpool>
+                    <pushconstant val="0"/>
+                    <trace/>
+                    <pushvalue val="1"/>
+                    <pushconstant val="2"/>
+                    <pushvalue val="3"/>
+                    <setmember/>
+                    <pushvalue val="1"/>
+                    <pushconstant val="4"/>
+                    <pushconstant val="5"/>
+                    <setmember/>
+                    <end/>
+                </action>
+                <placeobject depth="1" character="5" rotm00="2.780014" rotm01="0.000000" rotm10="0.000000" rotm11="1.780014" tx="1.000000" ty="1.000000" red="255" green="255" blue="255" alpha="255" ratio="0.000153" clipdepth="-1" unknown="0">
+                    <poflags value="HasCharacter|HasMatrix|HasName|HasRatio"/>
+                    <poname name="Background"/>
+                </placeobject>
+                <placeobject depth="3" character="3" rotm00="1.399994" rotm01="0.000000" rotm10="0.000000" rotm11="0.900024" tx="70.000000" ty="45.000000" red="255" green="255" blue="255" alpha="255" ratio="0.000153" clipdepth="-1" unknown="0">
+                    <poflags value="HasCharacter|HasClipActions|HasMatrix|HasName|HasRatio"/>
+                    <poname name="Engaging"/>
+                    <clipactions>
+                        <clipaction flags="512" flags2="0">
+                            <pushstring str="_RenderObj"/>
+                            <setstringvar str=""/>
+                            <pushstring str="_type"/>
+                            <setstringvar str="View3D"/>
+                            <pushstring str="_KeepAspectRatio"/>
+                            <pushtrue/>
+                            <setvariable/>
+                            <pushstring str="_AnimMode"/>
+                            <setstringvar str="LOOP"/>
+                            <end/>
+                        </clipaction>
+                    </clipactions>
+                </placeobject>
+                <placeobject depth="5" character="7" rotm00="1.000000" rotm01="0.000000" rotm10="0.000000" rotm11="1.000000" tx="143.000000" ty="32.650002" red="255" green="255" blue="255" alpha="255" ratio="0.000153" clipdepth="-1" unknown="0">
+                    <poflags value="HasCharacter|HasMatrix|HasRatio"/>
+                </placeobject>
+            </frame>
+            <frame id="11"/>
+            <frame id="12"/>
+            <frame id="13"/>
+            <frame id="14"/>
+            <frame id="15"/>
+            <frame id="16"/>
+            <frame id="17"/>
+            <frame id="18"/>
+            <frame id="19">
+                <action>
+                    <noarg action="7"/>
+                    <end/>
+                </action>
+            </frame>
+            <frame id="20">
+                <removeobject depth="1"/>
+                <removeobject depth="3"/>
+                <removeobject depth="5"/>
+                <framelabel label="_waiting" frame="20"/>
+                <action>
+                    <constantpool>
+                        <constant id="0" string="Banner is _waiting"/>
+                        <constant id="1" string="WaitingBttn"/>
+                        <constant id="2" string="_RenderObj"/>
+                        <constant id="3" string="_FlagRenderObj"/>
+                        <constant id="4" string="Location"/>
+                    </constantpool>
+                    <pushconstant val="0"/>
+                    <trace/>
+                    <pushvalue val="1"/>
+                    <pushconstant val="2"/>
+                    <pushvalue val="3"/>
+                    <setmember/>
+                    <pushvalue val="1"/>
+                    <pushconstant val="4"/>
+                    <pushvalue val="4"/>
+                    <setmember/>
+                    <end/>
+                </action>
+                <action>
+                    <getstringvar str="WaitingGlow"/>
+                    <pushstring str="_RenderObj"/>
+                    <getstringvar str="_GlowRenderObj"/>
+                    <setmember/>
+                    <end/>
+                </action>
+                <placeobject depth="1" character="3" rotm00="1.399994" rotm01="0.000000" rotm10="0.000000" rotm11="0.900009" tx="70.000000" ty="45.000000" red="255" green="255" blue="255" alpha="255" ratio="0.000305" clipdepth="-1" unknown="0">
+                    <poflags value="HasCharacter|HasClipActions|HasMatrix|HasName|HasRatio"/>
+                    <poname name="WaitingGlow"/>
+                    <clipactions>
+                        <clipaction flags="512" flags2="0">
+                            <pushstring str="_RenderObj"/>
+                            <setstringvar str="RenderObjectFileName"/>
+                            <pushstring str="_type"/>
+                            <setstringvar str="View3D"/>
+                            <pushstring str="_KeepAspectRatio"/>
+                            <pushtrue/>
+                            <setvariable/>
+                            <pushstring str="_AnimMode"/>
+                            <setstringvar str="LOOP"/>
+                            <end/>
+                        </clipaction>
+                    </clipactions>
+                </placeobject>
+                <placeobject depth="3" character="4" rotm00="1.000000" rotm01="0.000000" rotm10="0.000000" rotm11="1.000000" tx="0.000000" ty="0.000000" red="255" green="255" blue="255" alpha="255" ratio="0.000305" clipdepth="-1" unknown="0">
+                    <poflags value="HasCharacter|HasMatrix|HasName|HasRatio"/>
+                    <poname name="WaitingBttn"/>
+                </placeobject>
+            </frame>
+            <frame id="21"/>
+            <frame id="22"/>
+            <frame id="23"/>
+            <frame id="24"/>
+            <frame id="25"/>
+            <frame id="26"/>
+            <frame id="27"/>
+            <frame id="28"/>
+            <frame id="29">
+                <action>
+                    <noarg action="7"/>
+                    <end/>
+                </action>
+            </frame>
+            <frame id="30">
+                <removeobject depth="1"/>
+                <removeobject depth="3"/>
+                <framelabel label="_disabled" frame="30"/>
+                <action>
+                    <constantpool>
+                        <constant id="0" string="Banner is _disabled"/>
+                        <constant id="1" string="Disabled"/>
+                        <constant id="2" string="_RenderObj"/>
+                        <constant id="3" string="_FlagRenderObj"/>
+                        <constant id="4" string="_Light0"/>
+                        <constant id="5" string="0.25, 0.25, 0.25"/>
+                    </constantpool>
+                    <pushconstant val="0"/>
+                    <trace/>
+                    <pushvalue val="1"/>
+                    <pushconstant val="2"/>
+                    <pushvalue val="3"/>
+                    <setmember/>
+                    <pushvalue val="1"/>
+                    <pushconstant val="4"/>
+                    <pushconstant val="5"/>
+                    <setmember/>
+                    <end/>
+                </action>
+                <action>
+                    <getstringvar str="DisabledGlow"/>
+                    <pushstring str="_RenderObj"/>
+                    <getstringvar str="_GlowRenderObj"/>
+                    <setmember/>
+                    <end/>
+                </action>
+                <placeobject depth="1" character="3" rotm00="1.399994" rotm01="0.000000" rotm10="0.000000" rotm11="0.900009" tx="70.000000" ty="45.000000" red="255" green="255" blue="255" alpha="255" ratio="0.000458" clipdepth="-1" unknown="0">
+                    <poflags value="HasCharacter|HasClipActions|HasMatrix|HasName|HasRatio"/>
+                    <poname name="DisabledGlow"/>
+                    <clipactions>
+                        <clipaction flags="512" flags2="0">
+                            <pushstring str="_RenderObj"/>
+                            <setstringvar str="RenderObjectFileName"/>
+                            <pushstring str="_type"/>
+                            <setstringvar str="View3D"/>
+                            <pushstring str="_KeepAspectRatio"/>
+                            <pushtrue/>
+                            <setvariable/>
+                            <pushstring str="_AnimMode"/>
+                            <setstringvar str="LOOP"/>
+                            <end/>
+                        </clipaction>
+                    </clipactions>
+                </placeobject>
+                <placeobject depth="3" character="5" rotm00="2.780014" rotm01="0.000000" rotm10="0.000000" rotm11="1.780014" tx="1.000000" ty="1.000000" red="255" green="255" blue="255" alpha="255" ratio="0.000458" clipdepth="-1" unknown="0">
+                    <poflags value="HasCharacter|HasMatrix|HasRatio"/>
+                </placeobject>
+                <placeobject depth="5" character="3" rotm00="1.399994" rotm01="0.000000" rotm10="0.000000" rotm11="0.900009" tx="70.000000" ty="45.000000" red="255" green="255" blue="255" alpha="255" ratio="0.000458" clipdepth="-1" unknown="0">
+                    <poflags value="HasCharacter|HasClipActions|HasMatrix|HasName|HasRatio"/>
+                    <poname name="Disabled"/>
+                    <clipactions>
+                        <clipaction flags="512" flags2="0">
+                            <pushstring str="_RenderObj"/>
+                            <setstringvar str=""/>
+                            <pushstring str="_type"/>
+                            <setstringvar str="View3D"/>
+                            <pushstring str="_KeepAspectRatio"/>
+                            <pushtrue/>
+                            <setvariable/>
+                            <pushstring str="_AnimMode"/>
+                            <setstringvar str="LOOP"/>
+                            <end/>
+                        </clipaction>
+                    </clipactions>
+                </placeobject>
+            </frame>
+            <frame id="31"/>
+            <frame id="32"/>
+            <frame id="33"/>
+            <frame id="34"/>
+            <frame id="35"/>
+            <frame id="36"/>
+            <frame id="37"/>
+            <frame id="38"/>
+            <frame id="39">
+                <action>
+                    <noarg action="7"/>
+                    <end/>
+                </action>
+            </frame>
+        </frames>
+    </sprite>
+    <shape id="9" top="-20.500000" left="-20.500000" bottom="20.500000" right="20.500000" geometry="9"/>
+    <sprite id="10">
+        <frames>
+            <frame id="0">
+                <action>
+                    <pushglobal/>
+                    <getstringmember str="InGame"/>
+                    <logicalnot/>
+                    <branchiftrue offset="16"/>
+                    <gotoframe frame="2"/>
+                    <branchalways offset="1"/>
+                    <noarg action="7"/>
+                    <end/>
+                </action>
+                <placeobject depth="1" character="9" rotm00="1.000000" rotm01="0.000000" rotm10="0.000000" rotm11="1.000000" tx="0.000000" ty="0.000000" red="255" green="255" blue="255" alpha="255" ratio="0.000000" clipdepth="-1" unknown="0">
+                    <poflags value="HasCharacter|HasMatrix"/>
+                </placeobject>
+            </frame>
+            <frame id="1"/>
+            <frame id="2">
+                <removeobject depth="1"/>
+                <framelabel label="_hide" frame="2"/>
+            </frame>
+            <frame id="3"/>
+            <frame id="4"/>
+            <frame id="5"/>
+            <frame id="6"/>
+        </frames>
+    </sprite>
+    <shape id="11" top="-23.500000" left="-23.500000" bottom="23.500000" right="23.500000" geometry="11"/>
+    <sprite id="12">
+        <frames>
+            <frame id="0">
+                <placeobject depth="1" character="11" rotm00="1.000000" rotm01="0.000000" rotm10="0.000000" rotm11="1.000000" tx="0.000000" ty="0.000000" red="255" green="255" blue="255" alpha="255" ratio="0.000000" clipdepth="-1" unknown="0">
+                    <poflags value="HasCharacter|HasMatrix"/>
+                </placeobject>
+            </frame>
+        </frames>
+    </sprite>
+</aptdata>

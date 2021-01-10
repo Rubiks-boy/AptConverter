@@ -6,26 +6,30 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
-#define STRLENGTH(x) (4 * ((((uint32_t)strlen(x) + 1) + 3)/4))
+#define STRLENGTH(x) (4 * ((((uint32_t)strlen(x) + 1) + 3) / 4))
 #define GETALIGN(x) ((4 * ((x + 3) / 4)) - x)
 #define ALIGN(x) x = ((uint8_t *)(4 * ((((uint32_t)x) + 3) / 4)))
-#define B(x) x?"true":"false"
-#define add(x) *((uint8_t **)&x) += (uint32_t)aptbuffer; 
+#define B(x) x ? "true" : "false"
+#define add(x) *((uint8_t **)&x) += (uint32_t)aptbuffer;
 
-inline uint32_t HexToDecimal(const char* str)
+inline uint32_t HexToDecimal(const char *str)
 {
 	return (uint32_t)strtol(str, NULL, 16);
 }
 
 //read an integer from memory
-inline uint32_t ReadUint(uint8_t*& iter)
+inline uint32_t ReadUint(uint8_t *&iter)
 {
-	uint32_t result = *(uint32_t*)iter;
+	uint32_t result = *(uint32_t *)iter;
+	result = (result >> 24) |
+			 ((result << 8) & 0x00FF0000) |
+			 ((result >> 8) & 0x0000FF00) |
+			 (result << 24);
 	iter += 4;
 	return result;
 }
 
-template<class T>
+template <class T>
 inline uint8_t GetByte(T num, uint8_t byte)
 {
 	uint8_t result;
@@ -48,7 +52,5 @@ inline uint8_t GetByte(T num, uint8_t byte)
 	return result;
 }
 
-
 //split a string at the give character
 std::vector<std::string> split(std::string str, std::string sep);
-

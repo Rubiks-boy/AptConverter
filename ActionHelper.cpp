@@ -1,5 +1,13 @@
 #include "ActionHelper.hpp"
 
+void swapByteOrder2(uint32_t &ui)
+{
+	ui = (ui >> 24) |
+		 ((ui << 8) & 0x00FF0000) |
+		 ((ui >> 8) & 0x0000FF00) |
+		 (ui << 24);
+}
+
 void ActionHelper::AddAction(action_type action, ActionBytes *ab)
 {
 	unsigned char c = (unsigned char)action;
@@ -512,8 +520,10 @@ void ActionHelper::APT_ProcessActions(tinyxml2::XMLDocument &doc, tinyxml2::XMLE
 		case ACTION_CONSTANTPOOL:
 		{
 			ALIGN(a);
+			swapByteOrder2(*(uint32_t *)a);
 			uint32_t count = *(uint32_t *)a;
 			a += 4;
+			swapByteOrder2(*(uint32_t *)a);
 			add(*(uint32_t *)a);
 			uint32_t *cpd = *(uint32_t **)a;
 			a += 4;
@@ -523,6 +533,7 @@ void ActionHelper::APT_ProcessActions(tinyxml2::XMLDocument &doc, tinyxml2::XMLE
 			{
 				auto node2 = doc.NewElement("constant");
 				node2->SetAttribute("id", i);
+				swapByteOrder2(cpd[i]);
 				if (data->items[cpd[i]]->type == TYPE_NUMBER)
 					node2->SetAttribute("integer", data->items[cpd[i]]->numvalue);
 				else if (data->items[cpd[i]]->type == TYPE_STRING)
@@ -537,6 +548,7 @@ void ActionHelper::APT_ProcessActions(tinyxml2::XMLDocument &doc, tinyxml2::XMLE
 		{
 			ALIGN(a);
 			uint32_t count = *(uint32_t *)a;
+			swapByteOrder2(count);
 			a += 4;
 			add(*(uint32_t *)a);
 			uint32_t *pid = *(uint32_t **)a;
