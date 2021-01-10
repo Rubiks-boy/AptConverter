@@ -2,19 +2,19 @@
 #ifndef DLL_PROJECT
 #include "Aptfile.hpp"
 
-int main(int argc, char** argv)
+int main(int argc, char **argv)
 {
 	std::string filename;
-	switch(argc)
+	switch (argc)
 	{
 	case 1:
 	{
-		std::cout << "Please specify the file you want to convert:" << std::endl;	
+		std::cout << "Please specify the file you want to convert:" << std::endl;
 		std::cin >> filename;
 		break;
 	}
 	case 2:
-	{		
+	{
 		filename = argv[1];
 		break;
 	}
@@ -28,7 +28,7 @@ int main(int argc, char** argv)
 		std::cout << "Failed to convert " << filename << " !" << std::endl;
 
 	system("pause");
-	
+
 	return 0;
 }
 #endif

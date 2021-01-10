@@ -87,7 +87,6 @@ public:
 		ACTION_VAR = 0x41,
 		ACTION_INITARRAY = 0x42,
 
-
 		ACTION_INITOBJECT = 0x43,
 
 		ACTION_TYPEOF = 0x44,
@@ -141,7 +140,6 @@ public:
 
 		ACTION_CONSTANTPOOL = 0x88,
 
-
 		ACTION_DEFINEFUNCTION2 = 0x8E,
 
 		ACTION_TRY = 0x8F,
@@ -194,35 +192,41 @@ public:
 		bool loadvariables : 1;
 	};
 
-	struct ActionString {
+	struct ActionString
+	{
 		uint32_t stringoffset;
 		const char *string;
 	};
 
-	struct FunctionArgument {
+	struct FunctionArgument
+	{
 		uint32_t reg;
 		const char *name;
 	};
 
-	struct ActionDefineFunction2 {
+	struct ActionDefineFunction2
+	{
 		uint32_t definefunction2offset;
 		uint32_t argumentcount;
 		std::vector<FunctionArgument *> arguments;
 	};
 
-	struct ActionDefineFunction {
+	struct ActionDefineFunction
+	{
 		uint32_t definefunctionoffset;
 		uint32_t argumentcount;
 		std::vector<const char *> arguments;
 	};
 
-	struct ActionPushData {
+	struct ActionPushData
+	{
 		uint32_t pushdataoffset;
 		uint32_t pushdatacount;
 		std::vector<uint32_t> pushdata;
 	};
 
-	struct ActionBytes {
+	struct ActionBytes
+	{
 		uint32_t actionbytecount;
 		std::stringstream actionbytes;
 		uint32_t constantcount;
@@ -237,9 +241,9 @@ public:
 		std::vector<ActionDefineFunction *> actiondefinefunctions;
 	};
 
-	static void APT_ProcessActions(tinyxml2::XMLDocument& doc,tinyxml2::XMLElement* parent, uint8_t *actions, uint8_t *aptaptdata, AptConstData* data, uint8_t* aptbuffer);
-	static void XML_ProcessActions(tinyxml2::XMLElement* entry, ActionHelper::ActionBytes *ab, AptConstData* data);
-	static void AddAction(action_type action, ActionBytes* ab);
+	static void APT_ProcessActions(tinyxml2::XMLDocument &doc, tinyxml2::XMLElement *parent, uint8_t *actions, uint8_t *aptaptdata, AptConstData *data, uint8_t *aptbuffer);
+	static void XML_ProcessActions(tinyxml2::XMLElement *entry, ActionHelper::ActionBytes *ab, AptConstData *data);
+	static void AddAction(action_type action, ActionBytes *ab);
 	static void AddIntAction(action_type action, ActionBytes *ab, int actionvalue);
 	static void AddStringAction(action_type action, ActionBytes *ab, const char *actionstring);
 	static void AddByteAction(action_type action, ActionBytes *ab, unsigned char number);
