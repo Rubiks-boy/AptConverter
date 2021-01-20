@@ -196,7 +196,7 @@ bool AptFile::AptToXML(std::string filename)
 
 					if (po->name)
 					{
-						add(po->name);
+						addOrig(po->name);
 						auto entry6 = doc.NewElement("poname");
 						entry6->SetAttribute("name", po->name);
 						entry5->InsertEndChild(entry6);
@@ -495,7 +495,7 @@ bool AptFile::AptToXML(std::string filename)
 
 								if (po->name)
 								{
-									add(po->name);
+									addOrig(po->name);
 									auto entry7 = doc.NewElement("poname");
 									entry7->SetAttribute("name", po->name);
 									entry6->InsertEndChild(entry7);
